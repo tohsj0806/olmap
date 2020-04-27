@@ -31,6 +31,16 @@ export default {
   name: 'olMap',
   props: {
     modal: {},
+    center:{
+      type: Array,
+      default: [116.28, 39.54]
+    },
+    mapSource:{
+      type:String
+    },
+    zoom:{
+      type: Number
+    },
   },
   data(){
     return {
@@ -60,6 +70,22 @@ export default {
         },
         immediate: true
     },
+    'zoom':{
+      handler: function(val, oldVal){
+        if(this.map && val !== oldVal){
+          this.map.getView().setZoom(val)
+        }
+      },
+        immediate: true
+    },
+    'center':{
+      handler: function(val){
+       if(this.map && val !== oldVal){
+          this.map.getView().setCenter(val)
+        }
+      },
+      immediate: true
+    }
   },
   mounted(){
     this.initMap()
@@ -72,12 +98,12 @@ export default {
       let changsha = [113,	28.21]
       this.map = new Map({
         target: map,
-        layers: mapConfig.streetMap(),
+        layers: mapConfig.streetMap(this.mapSource),
         view: new View({
           projection: "EPSG:4326", 
-          center: [mapConfig.x, mapConfig.y],  
+          center: this.center,  
           minZoom: 1,
-          zoom: mapConfig.zoom
+          zoom: this.zoom
         })
       })
       //矢量标注的数据源

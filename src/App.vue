@@ -8,7 +8,7 @@
       <button @click="$refs.map.removeMarker('beijing')" style="height:40px;width:150px">清除某个坐标</button>
       <button @click="$refs.map.clearMap()" style="height:40px;width:150px">清空地图坐标</button>
     </div>
-    <ol-map class="map" :markerIcon="icon" :modal="modal" ref="map"/>
+    <ol-map class="map" :modal="modal" ref="map" :zoom="zoom" :center="center" :mapSource="mapSource"/>
   
   </div>
 </template>
@@ -23,6 +23,9 @@ export default {
   },
   data(){
     return {
+      zoom:9,
+      center: [116.28, 39.54],
+      mapSource: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
       modal:{
         cursorStyle: "pointer",
         markerIcon: require('./assets/station.png'),
@@ -55,6 +58,7 @@ export default {
                     "</div>"
      }
      this.$refs.map.setMarker(marker)
+ 
     },
     setMarkers(){
       this.$refs.map.clearMap()
@@ -96,6 +100,9 @@ export default {
                     "</div>"
       }]
       this.$refs.map.setMarkers(markers)
+      this.center = changsha
+      this.zoom = 5
+
     }
   }
 }
