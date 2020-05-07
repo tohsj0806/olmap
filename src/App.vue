@@ -7,9 +7,15 @@
       <button @click="setMarkers()" style="height:40px;width:150px">新增多个</button>
       <button @click="$refs.map.removeMarker('beijing')" style="height:40px;width:150px">清除某个坐标</button>
       <button @click="$refs.map.clearMap()" style="height:40px;width:150px">清空地图坐标</button>
+      <button @click="setRoute()" style="height:40px;width:150px">邮路规划</button>
+      <button @click="$refs.map.setPolyline()" style="height:40px;width:150px">显示轨迹</button>
+      <button @click="$refs.map.startAnimation(true)" style="height:40px;width:150px">播放轨迹</button>
+      <button @click="$refs.map.pauseAnimation()" style="height:40px;width:150px">暂停播放</button>
+      <button @click="$refs.map.startAnimation(false)" style="height:40px;width:150px">继续播放</button>
+      <button @click="$refs.map.setCenter([114.30, 30.60])" style="height:40px;width:150px">设置中心点</button>
     </div>
-    <ol-map class="map" :modal="modal" ref="map" :zoom="zoom" :center="center" :mapSource="mapSource"/>
-  
+    <ol-map class="map" :modal="modal" ref="map" :zoom="zoom" 
+    :center="center" :mapSource="mapSource" @positionResult="getPostionResult"/>
   </div>
 </template>
 
@@ -23,7 +29,7 @@ export default {
   },
   data(){
     return {
-      zoom:9,
+      zoom:11,
       center: [116.28, 39.54],
       mapSource: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
       modal:{
@@ -33,6 +39,90 @@ export default {
     }
   },
   methods:{
+    getPostionResult(val){
+      alert(val)
+    },
+    setRoute(){
+      let routeCoords =
+                    [[120.97202539443971,29.149083495140076],[120.97365617752077,29.147656559944153],[120.97478270530702,29.146594405174255],
+                        [120.97543716430665,29.14593994617462],[120.97596287727357,29.145285487174988],[120.9764349460602,29.144577383995056],
+                        [120.97669243812561,29.14408653974533],[120.97699284553528,29.143426716327667],[120.97723960876465,29.142654240131378],
+                        [120.97735226154329,29.142230451107025],[120.97756683826448,29.141243398189545],[120.97781896591188,29.140020310878754],
+                        [120.97790479660036,29.139483869075775],[120.97804427146912,29.138880372047424],[120.97839832305908,29.137893319129944],
+                        [120.97876310348511,29.137163758277893],[120.97941756248474,29.13626253604889],[120.9810483455658,29.134342074394226],
+                        [120.9818959236145,29.133376479148865],[120.98270595073701,29.132418930530548],[120.98334968090059,29.131678640842438],
+                        [120.98402559757234,29.130959808826447],[120.98470687866212,29.13033217191696],[120.985227227211,29.12989765405655],
+                        [120.9860908985138,29.129264652729034],[120.98707258701324,29.12864774465561],[120.9880542755127,29.12812203168869],
+                        [120.98936319351196,29.127537310123444],[120.99144458770752,29.126807749271393],[120.99297881126404,29.126287400722504],
+                        [120.99447548389435,29.125772416591644],[120.99569857120514,29.125321805477142],[120.99704504013062,29.124737083911896],
+                        [120.99830567836761,29.12410408258438],[120.99883675575256,29.123830497264862],[120.99963068962097,29.1233691573143],
+                        [121.00059628486633,29.122741520404816],[121.00166380405426,29.122038781642914],[121.00329995155334,29.120981991291046],
+                        [121.00475907325745,29.120016396045685],[121.00560128688812,29.119447767734528],[121.00612163543701,29.11910980939865],
+                        [121.0070389509201,29.11860018968582],[121.00769877433777,29.118267595767975],[121.00861608982086,29.1178759932518],
+                        [121.00979626178741,29.117489755153656],[121.01091742515564,29.117216169834137],[121.01166307926178,29.117071330547336],
+                        [121.01268768310547,29.116931855678562],[121.0139536857605,29.116878211498264],[121.01507484912872,29.116931855678562],
+                        [121.01689338684082,29.117071330547336],[121.01934492588043,29.117291271686558],[121.02029979228975,29.117350280284885],
+                        [121.02101325988771,29.117339551448826],[121.02191984653474,29.117242991924286],[121.02294981479646,29.117001593112946],
+                        [121.02402269840242,29.116583168506622],[121.02478981018068,29.1161647439003],[121.0260719060898,29.115327894687653]]
+      // 模拟站点位置
+      let stationList = [
+        {
+        id: "11",
+        position: [120.97202539443971,29.149083495140076],
+        title:"11",
+        icon: require('./assets/station.png'),
+        content: "<div class='card'><div class='pop-up-top'>" +
+                    "<span class='pop-up-tit f-left'><strong>11</strong></span>" +
+                    "</div>" +
+                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                    "<div class='pop-up-middle'>" +
+                    "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                    "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                    "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                    "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                    "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                    "</div>" +
+                    "</div>"
+      },
+          {
+        id: "22",
+        position: [120.97543716430665,29.14593994617462],
+        title:"22",
+        icon: require('./assets/station.png'),
+        content: "<div class='card'><div class='pop-up-top'>" +
+                    "<span class='pop-up-tit f-left'><strong>22</strong></span>" +
+                    "</div>" +
+                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                    "<div class='pop-up-middle'>" +
+                    "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                    "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                    "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                    "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                    "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                    "</div>" +
+                    "</div>"
+      },
+       {
+        id: "33",
+        position: [121.0260719060898,29.115327894687653],
+        title:"33",
+        icon: require('./assets/station.png'),
+        content: "<div class='card'><div class='pop-up-top'>" +
+                    "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                    "</div>" +
+                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                    "<div class='pop-up-middle'>" +
+                    "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                    "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                    "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                    "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                    "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                    "</div>" +
+                    "</div>"
+      },
+    ]
+      this.$refs.map.setRoute(stationList, routeCoords)
+    },
     addMarker(val){
       this.modal.cursorStyle = val
     },
@@ -44,20 +134,9 @@ export default {
         position: beijing,
         title:"北京",
         icon: require('./assets/station.png'),
-        content: "<div class='card'><div class='pop-up-top'>" +
-                    "<span class='pop-up-tit f-left'><strong>北京</strong></span>" +
-                    "</div>" +
-                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                    "<div class='pop-up-middle'>" +
-                    "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                    "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                    "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                    "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                    "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                    "</div>" +
-                    "</div>"
      }
-     this.$refs.map.setMarker(marker)
+    this.$refs.map.setMarker(marker)
+    this.center = beijing
  
     },
     setMarkers(){
@@ -81,7 +160,8 @@ export default {
                     "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
                     "</div>" +
                     "</div>"
-      },{
+       },
+      {
         id: "changsha",
         position: changsha,
         title: "长沙",
@@ -98,10 +178,10 @@ export default {
                     "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
                     "</div>" +
                     "</div>"
-      }]
+      }
+      ]
       this.$refs.map.setMarkers(markers)
-      this.center = changsha
-      this.zoom = 5
+
 
     }
   }
