@@ -6,6 +6,11 @@
       <div id="popup-content" ref="content">
       </div>
     </div>
+    <div id="popup" class="ol-popup" ref="popup" v-show="tooltipShow">
+      <a href="#" id="popup-closer" class="ol-popup-closer" @click="closePopup"></a>
+      <div id="popup-content" ref="content">
+      </div>
+    </div>
     <!--搜索框-->
     <div class="info" v-show="searchInputShow">
         <div class="input-item-map">
@@ -91,9 +96,11 @@ export default {
       animating: false,
       animation:null,
       route: [],
+      polylineItems:[],
       now:null,
       geoMarker:null,
       progress:0,
+      tooltipShow:false
     }
   },
   watch: {
@@ -131,11 +138,95 @@ export default {
   
   },
   methods:{
+    
+
+    //轨迹回放
+    setPolyline(stationList, pointList){
+      this.clearMap()
+      let icon = require('../assets/station.png')
+      this.route = []
+      this.polylineItems = pointList
+      pointList.forEach(item=>{this.route.push(item.position)})
+  
+
+      let polylineFeature = new Feature({
+        geometry: new LineString(this.route, 'XY')
+      }) 
+      polylineFeature.setStyle(this.lineStyle)
+      this.vectorLineSource.addFeature(polylineFeature)
+      this.map.getView().setCenter([120.9764349460602,29.144577383995056])
+      //设置站点
+      stationList.forEach((item, index)=>{
+        let title = item.title
+        if(index === 0) title = item.title + "(起点)"
+        if(index === stationList.length -1)  item.title + "(终点)"
+        let stationPoint = new Feature({
+          id:item.id,
+          geometry: new Point(item.position),
+          title:title,
+          icon: item.icon
+        })
+        stationPoint.setStyle(this.createLabelStyle(stationPoint))
+        this.vectorLineSource.addFeature(stationPoint)
+      })
+
+      //移动坐标
+      this.geoMarker = new Feature({
+        id:"movePoint",
+        icon: pointList[0].icon,
+        title: pointList[0].title,
+        geometry: new Point(pointList[0].position)
+      })
+      this.geoMarker.setStyle(this.createLabelStyle(this.geoMarker))
+      this.vectorLineSource.addFeature(this.geoMarker)
+
+      window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+      let cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame
+
+      //设置缩放
+      let mapPadding = [80, 60, 80, 60] 
+      let extent = this.vectorLineSource.getExtent()
+      this.map.getView().fit(extent, {
+        size: this.map.getSize(),
+        padding: mapPadding,
+        nearest: true
+      })
+    },
+    moveFeatureStyle(polylineItem){
+      return new Style({
+          text: new Text({
+                offsetY:"-25",
+                //位置
+                textAlign: 'center',
+                //基准线
+                textBaseline: 'middle',
+                //文字样式
+                font: 'normal 12px 微软雅黑',
+                //文本内容
+                text: polylineItem.title,
+                //文本填充样式（即文字颜色）
+                fill: new Fill({ color: '#575757' }),
+                stroke: new Stroke({ color: '#575757', width: 0.5 }),
+                backgroundFill: new Fill({
+                  color:'#ffc125',
+                }),
+                backgroundStroke:new Stroke({ color: '#575757', width: 1}),
+                padding:[1, 15, 1, 15]
+              }),
+              image: new Icon({
+                src: polylineItem.icon,
+                rotateWithView: false,
+                //rotation: rotation
+              })
+      })
+    },
     moveFeature(event){
       this.progress += 1
       let car = require('../assets/car.png')
+      let polylineItem = this.polylineItems[Math.floor(this.progress/this.speed)]
       if(this.progress%this.speed==0){
-
+        //进度
+        //console.log((this.progress/this.speed/(this.route.length-1)*100).toFixed(2) + "%")
         let currentPoint = new Point(this.route[this.progress/this.speed])
         let dx = this.route[this.progress/this.speed][0] - this.route[this.progress/this.speed-1][0]
         let dy = this.route[this.progress/this.speed][1] - this.route[this.progress/this.speed-1][1]
@@ -146,16 +237,11 @@ export default {
           id:"movePoint",
           geometry: currentPoint
         })
-        let styleGeomarker = new Style({
-              image: new Icon({
-                src: car,
-                rotateWithView: false,
-                rotation: -rotation
-              })})
-        currentFeature.setStyle(styleGeomarker)
+        console.log(this.progress/this.speed)
+        currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
         this.vectorLineSource.addFeature(currentFeature)
       }
-      if(this.progress%this.speed!=0){
+      if(this.progress % this.speed!=0){
         let arcGenerator = new arc.GreatCircle(
                 {x: this.route[Math.floor(this.progress/this.speed)][0], y: this.route[Math.floor(this.progress/this.speed)][1]},
                 {x: this.route[Math.floor(this.progress/this.speed+1)][0], y: this.route[Math.floor(this.progress/this.speed+1)][1]});
@@ -168,28 +254,28 @@ export default {
         let movePoint = this.vectorLineSource.getFeatures().find(item => item.get('id') == "movePoint")
         this.vectorLineSource.removeFeature(movePoint)
 
-
-
-        let lineFeature = new Feature({
-          geometry: new LineString(arcLine.geometries[0].coords, 'XY')
-        }) 
-        lineFeature.setStyle(this.lineMoveStyle)
-        this.vectorLineSource.addFeature(lineFeature)
-
-
         let currentFeature = new Feature({
           id:"movePoint",
           geometry: currentPoint
         })
-        let styleGeomarker = new Style({
-              image: new Icon({
-                src: car,
-                rotateWithView: false,
-                rotation: -rotation
-              })})
-        currentFeature.setStyle(styleGeomarker)
+        currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
         this.vectorLineSource.addFeature(currentFeature)
+
+        let positions = []
+        arcLine.geometries[0].coords.forEach((item,index)=>{
+          if(index <= this.progress%this.speed) positions.push(item)
+        })
+
+        let lineFeature = new Feature({
+          geometry: new LineString(positions, 'XY')
+        })
+        if(polylineItem.speed == 1) lineFeature.setStyle(this.lineMoveStyle1)
+        else if(polylineItem.speed == 3) lineFeature.setStyle(this.lineMoveStyle2)
+        else lineFeature.setStyle(this.lineMoveStyle)
+        this.vectorLineSource.addFeature(lineFeature)
+
       }
+
       if (this.progress/this.speed < this.route.length-1) {
         this.animation = requestAnimationFrame(this.moveFeature)
       }
@@ -209,7 +295,9 @@ export default {
       if(this.animation)
       window.cancelAnimationFrame(this.animation);
     },
+    //邮路规划
     setRoute(stationList, routeCoords){
+      this.clearMap()
       let icon = require('../assets/station.png')
       let self = this
       this.markersData = []
@@ -235,7 +323,7 @@ export default {
       this.markersData = stationList
       this.map.on('click', function (evt) {
         //判断当前单击处是否有要素，捕获到要素时弹出popup
-        var feature = self.map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) { return feature; });
+        var feature = self.map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) { return feature });
         if (feature && feature.get('id')){
           let popupData = self.markersData.find(item => item.id == feature.get('id'))
           var content = popupData.content;
@@ -263,77 +351,7 @@ export default {
         nearest: true
       })
     },
-    setPolyline(){
-      //模拟坐标位置
-      let routeCoords =
-                    [[120.97202539443971,29.149083495140076],[120.97365617752077,29.147656559944153],[120.97478270530702,29.146594405174255],
-                        [120.97543716430665,29.14593994617462],[120.97596287727357,29.145285487174988],[120.9764349460602,29.144577383995056],
-                        [120.97669243812561,29.14408653974533],[120.97699284553528,29.143426716327667],[120.97723960876465,29.142654240131378],
-                        [120.97735226154329,29.142230451107025],[120.97756683826448,29.141243398189545],[120.97781896591188,29.140020310878754],
-                        [120.97790479660036,29.139483869075775],[120.97804427146912,29.138880372047424],[120.97839832305908,29.137893319129944],
-                        [120.97876310348511,29.137163758277893],[120.97941756248474,29.13626253604889],[120.9810483455658,29.134342074394226],
-                        [120.9818959236145,29.133376479148865],[120.98270595073701,29.132418930530548],[120.98334968090059,29.131678640842438],
-                        [120.98402559757234,29.130959808826447],[120.98470687866212,29.13033217191696],[120.985227227211,29.12989765405655],
-                        [120.9860908985138,29.129264652729034],[120.98707258701324,29.12864774465561],[120.9880542755127,29.12812203168869],
-                        [120.98936319351196,29.127537310123444],[120.99144458770752,29.126807749271393],[120.99297881126404,29.126287400722504],
-                        [120.99447548389435,29.125772416591644],[120.99569857120514,29.125321805477142],[120.99704504013062,29.124737083911896],
-                        [120.99830567836761,29.12410408258438],[120.99883675575256,29.123830497264862],[120.99963068962097,29.1233691573143],
-                        [121.00059628486633,29.122741520404816],[121.00166380405426,29.122038781642914],[121.00329995155334,29.120981991291046],
-                        [121.00475907325745,29.120016396045685],[121.00560128688812,29.119447767734528],[121.00612163543701,29.11910980939865],
-                        [121.0070389509201,29.11860018968582],[121.00769877433777,29.118267595767975],[121.00861608982086,29.1178759932518],
-                        [121.00979626178741,29.117489755153656],[121.01091742515564,29.117216169834137],[121.01166307926178,29.117071330547336],
-                        [121.01268768310547,29.116931855678562],[121.0139536857605,29.116878211498264],[121.01507484912872,29.116931855678562],
-                        [121.01689338684082,29.117071330547336],[121.01934492588043,29.117291271686558],[121.02029979228975,29.117350280284885],
-                        [121.02101325988771,29.117339551448826],[121.02191984653474,29.117242991924286],[121.02294981479646,29.117001593112946],
-                        [121.02402269840242,29.116583168506622],[121.02478981018068,29.1161647439003],[121.0260719060898,29.115327894687653]]
-      // 模拟站点位置
-      let stationList = [[120.97202539443971,29.149083495140076], [120.97543716430665,29.14593994617462],  [120.98936319351196,29.127537310123444], [121.0070389509201,29.11860018968582],[121.02029979228975,29.117350280284885],[121.0260719060898,29.115327894687653]]
 
-      this.route = routeCoords
-      let icon = require('../assets/station.png')
-      let car = require('../assets/car.png')
-
-      let lineFeature = new Feature({
-        geometry: new LineString(this.route, 'XY')
-      }) 
-      lineFeature.setStyle(this.lineStyle)
-      this.vectorLineSource.addFeature(lineFeature)
-
-      //设置站点
-      stationList.forEach((item, index)=>{
-        let title = ""
-        if(index === 0) title = "起点"
-        if(index === stationList.length -1)  title = "终点"
-        let stationPoint = new Feature({
-          geometry: new Point(item),
-          icon:icon,
-          title:title
-        })
-        stationPoint.setStyle(this.createLabelStyle(stationPoint))
-        this.vectorLineSource.addFeature(stationPoint)
-      })
-
-      //移动坐标
-      this.geoMarker = new Feature({
-        id:"movePoint",
-        icon: car,
-        geometry: new Point(this.route[0])
-      })
-      this.geoMarker.setStyle(this.createLabelStyle(this.geoMarker))
-      this.vectorLineSource.addFeature(this.geoMarker)
-
-      window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-      let cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame
-
-      //设置缩放
-      let mapPadding = [80, 60, 80, 60] 
-      let extent = this.vectorLineSource.getExtent()
-      this.map.getView().fit(extent, {
-        size: this.map.getSize(),
-        padding: mapPadding,
-        nearest: true
-      })
-    },
     initMap(){
       let map = this.$refs.rootmap
       map.style.cursor = "pointer"
@@ -529,7 +547,23 @@ export default {
           stroke: new Stroke({
             //width: 6, color: "#cfe7b4"
             width: 6, color: "#1bac2e"
-          })
+          }),
+        })
+    },
+    lineMoveStyle1(){
+      return new Style({
+          stroke: new Stroke({
+            //width: 6, color: "#cfe7b4"
+            width: 6, color: "red"
+          }),
+        })
+    },
+     lineMoveStyle2(){
+      return new Style({
+          stroke: new Stroke({
+            //width: 6, color: "#cfe7b4"
+            width: 6, color: "blue"
+          }),
         })
     },
     createLabelStyle(feature){

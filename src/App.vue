@@ -8,7 +8,7 @@
       <button @click="$refs.map.removeMarker('beijing')" style="height:40px;width:150px">清除某个坐标</button>
       <button @click="$refs.map.clearMap()" style="height:40px;width:150px">清空地图坐标</button>
       <button @click="setRoute()" style="height:40px;width:150px">邮路规划</button>
-      <button @click="$refs.map.setPolyline()" style="height:40px;width:150px">显示轨迹</button>
+      <button @click="setPolyline()" style="height:40px;width:150px">显示轨迹</button>
       <button @click="$refs.map.startAnimation(true)" style="height:40px;width:150px">播放轨迹</button>
       <button @click="$refs.map.pauseAnimation()" style="height:40px;width:150px">暂停播放</button>
       <button @click="$refs.map.startAnimation(false)" style="height:40px;width:150px">继续播放</button>
@@ -42,8 +42,250 @@ export default {
     getPostionResult(val){
       alert(val)
     },
+    setPolyline(){
+        let routeCoords =
+                    [
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:1,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [120.97202539443971,29.149083495140076]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:1,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [120.97365617752077,29.147656559944153]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:1,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position:[120.97478270530702,29.146594405174255]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:4,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [120.97543716430665,29.14593994617462]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:4,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [120.97596287727357,29.145285487174988]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:4,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [120.9764349460602,29.144577383995056]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:2,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [121.02101325988771,29.117339551448826]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:2,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [121.02191984653474,29.117242991924286]
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:4,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [121.02294981479646,29.117001593112946]
+                    },
+                   {
+                      icon: require('./assets/car_online.png'),
+                      speed:4,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [121.02402269840242,29.116583168506622],
+                    },
+                   {
+                      icon: require('./assets/car_online.png'),
+                      speed:3,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position:  [121.02478981018068,29.1161647439003],
+                    },
+                    {
+                      icon: require('./assets/car_online.png'),
+                      speed:3,
+                      title:"湘A23455",
+                      content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>",
+                      position: [121.0260719060898,29.115327894687653]
+                    }
+            ] 
+      let stationList = [
+        {
+        id: "11",
+        position: [120.97202539443971,29.149083495140076],
+        title:"11",
+        icon: require('./assets/station.png')
+      },
+          {
+        id: "22",
+        position: [120.97543716430665,29.14593994617462],
+        title:"22",
+        icon: require('./assets/station.png')
+      },
+       {
+        id: "33",
+        position: [121.0260719060898,29.115327894687653],
+        title:"33",
+        icon: require('./assets/station.png'),
+      },
+    ]
+      this.$refs.map.setPolyline(stationList, routeCoords)
+    },
     setRoute(){
-      let routeCoords =
+       let routeCoords =
                     [[120.97202539443971,29.149083495140076],[120.97365617752077,29.147656559944153],[120.97478270530702,29.146594405174255],
                         [120.97543716430665,29.14593994617462],[120.97596287727357,29.145285487174988],[120.9764349460602,29.144577383995056],
                         [120.97669243812561,29.14408653974533],[120.97699284553528,29.143426716327667],[120.97723960876465,29.142654240131378],
