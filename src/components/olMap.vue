@@ -92,6 +92,8 @@ export default {
       map: null,
       mapTarget: null,
       vectorPointLayer: null,
+      vectorPoint: null,
+      vectorLinePoint:null,
       vectorPointSource: null,
       vectorLineLayer: null,
       vectorLineSource: null,
@@ -321,27 +323,31 @@ export default {
       this.progress += 1
       let polylineItem = this.polylineItems[Math.floor(this.progress/this.speed)]
       this.map.addOverlay(this.setPopup("tipPop"));
-      
+      if(this.xxcgs) this.TipPop(polylineItem,polylineItem.position);
       if(this.progress%this.speed==0){
         //进度
-        console.log((this.progress/this.speed/(this.route.length-1)*100).toFixed(2) + "%")
+        this.$emit("positionJd", (this.progress/this.speed/(this.route.length-1)*100).toFixed(2))
         let currentPoint = new Point(this.route[this.progress/this.speed])
         let dx = this.route[this.progress/this.speed][0] - this.route[this.progress/this.speed-1][0]
         let dy = this.route[this.progress/this.speed][1] - this.route[this.progress/this.speed-1][1]
-        let rotation = Math.atan2(dy, dx);
-        let movePoint = this.vectorLineSource.getFeatures().find(item => item.get('id') == "movePoint")
-        console.log(1)
-        console.log(this.vectorLineSource.getFeatures())
-        console.log(movePoint)
-        this.vectorLineSource.removeFeature(movePoint)
+        if(!isNaN(dx)&&!isNaN(dy)){
+          let rotation = Math.atan2(dy, dx);
+        let movePoints = this.vectorLineSource.getFeatures().filter(item => item.get('id') == "movePoint")
+        movePoints.forEach(item=>{
+          this.vectorLineSource.removeFeature(item)
+        })
         if(this.cljz)  this.setCenter(currentPoint.flatCoordinates);
-        if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
+        // if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
         let currentFeature = new Feature({
           id:"movePoint",
+          icon:polylineItem.icon,
+          title:polylineItem.title,
           geometry: currentPoint
         })
         currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
         this.vectorLineSource.addFeature(currentFeature)
+        }
+        
       }
       if(this.progress % this.speed!=0){
         let arcGenerator = new arc.GreatCircle(
@@ -350,19 +356,22 @@ export default {
         let arcLine = arcGenerator.Arc(this.speed, {offset: 0});//在两个点之间生成100个点
         
         let currentPoint = new Point(arcLine.geometries[0].coords[this.progress%this.speed]);
+        //if(currentPoint.flatCoordinates[0]!=NaN)
         let dx = arcLine.geometries[0].coords[this.progress%this.speed][0] - arcLine.geometries[0].coords[this.progress%this.speed-1][0];
         let dy = arcLine.geometries[0].coords[this.progress%this.speed][1] - arcLine.geometries[0].coords[this.progress%this.speed-1][1];
-        let rotation = Math.atan2(dy, dx);
-        let movePoint = this.vectorLineSource.getFeatures().find(item => item.get('id') == "movePoint")
+        if(!isNaN(dx)&&!isNaN(dy)){
+          let rotation = Math.atan2(dy, dx);
+        let movePoints = this.vectorLineSource.getFeatures().filter(item => item.get('id') == "movePoint")
         if(this.cljz)  this.setCenter(currentPoint.flatCoordinates);
-        if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
-        console.log(2)
-        console.log(this.vectorLineSource.getFeatures())
-        console.log(movePoint)
-        this.vectorLineSource.removeFeature(movePoint)
+        // if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
+        movePoints.forEach(item=>{
+          this.vectorLineSource.removeFeature(item)
+        })
         let currentFeature = new Feature({
           id:"movePoint",
-          geometry: currentPoint
+          icon:polylineItem.icon,
+          title:polylineItem.title,
+          geometry: new Point(currentPoint.flatCoordinates) 
         })
         currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
         this.vectorLineSource.addFeature(currentFeature)
@@ -385,9 +394,10 @@ export default {
         }
 
         this.vectorLineSource.addFeature(lineFeature)
+        }
 
       }
-      this.tooltipShow =true
+     // this.tooltipShow =true
       
       if (this.progress/this.speed < this.route.length-1) {
         this.animation = requestAnimationFrame(this.moveFeature)
@@ -504,6 +514,13 @@ export default {
         type: 'LineString',  
         features: []
       })
+        this.vectorLinePoint = new VectorSource({
+        type: 'PointString',  
+        features: []
+      })
+       this.vectorPoint = new VectorLayer({
+          source: this.vectorLinePoint
+      })
       //矢量标注图层
       this.vectorPointLayer = new VectorLayer({
           source: this.vectorPointSource
@@ -512,8 +529,10 @@ export default {
       this.vectorLineLayer = new VectorLayer({
           source: this.vectorLineSource
       })
+      
       this.map.addLayer(this.vectorPointLayer)  
       this.map.addLayer(this.vectorLineLayer)
+      this.map.addLayer(this.vectorPoint)  
     },
     setCenter(point){
       this.map.getView().setCenter(point)

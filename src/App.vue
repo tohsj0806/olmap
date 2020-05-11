@@ -39,7 +39,7 @@ export default {
       gjms:false,
       cljz:false,
       xxcgs:false,
-      speed:2,
+      speed:10,
       center: [116.28, 39.54],
       mapSource: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
       modal:{
