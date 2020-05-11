@@ -13,15 +13,21 @@
       <button @click="$refs.map.pauseAnimation()" style="height:40px;width:150px">暂停播放</button>
       <button @click="$refs.map.startAnimation(false)" style="height:40px;width:150px">继续播放</button>
       <button @click="$refs.map.setCenter([114.30, 30.60])" style="height:40px;width:150px">设置中心点</button>
+      <button @click="setSpeed(100)" style="height:40px;width:50px">慢速</button>
+      <button @click="setSpeed(50)" style="height:40px;width:50px">中速</button>
+      <button @click="setSpeed(10)" style="height:40px;width:50px">快速</button>
+      <button @click="gjms=false" style="height:40px;width:150px">轨迹模式-单一</button>
+      <button @click="gjms=true" style="height:40px;width:150px">轨迹模式-速度</button>
+      <button @click="cljz=!cljz" style="height:40px;width:150px">车辆居中</button>
+       <button @click="xxcgs=!xxcgs" style="height:40px;width:150px">信息窗跟随</button>
     </div>
-    <ol-map class="map" :modal="modal" ref="map" :zoom="zoom" 
+    <ol-map class="map" :modal="modal" ref="map" :zoom="zoom" :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed"
     :center="center" :mapSource="mapSource" @positionResult="getPostionResult"/>
   </div>
 </template>
 
 <script>
 import olMap from './components/olMap.vue'
-
 export default {
   name: 'App',
   components: {
@@ -30,6 +36,10 @@ export default {
   data(){
     return {
       zoom:11,
+      gjms:false,
+      cljz:false,
+      xxcgs:false,
+      speed:2,
       center: [116.28, 39.54],
       mapSource: 'https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}',
       modal:{
@@ -42,247 +52,97 @@ export default {
     getPostionResult(val){
       alert(val)
     },
-    setPolyline(){
-        let routeCoords =
-                    [
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:1,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [120.97202539443971,29.149083495140076]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:1,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [120.97365617752077,29.147656559944153]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:1,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position:[120.97478270530702,29.146594405174255]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:4,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [120.97543716430665,29.14593994617462]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:4,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [120.97596287727357,29.145285487174988]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:4,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [120.9764349460602,29.144577383995056]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:2,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [121.02101325988771,29.117339551448826]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:2,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [121.02191984653474,29.117242991924286]
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:4,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [121.02294981479646,29.117001593112946]
-                    },
-                   {
-                      icon: require('./assets/car_online.png'),
-                      speed:4,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [121.02402269840242,29.116583168506622],
-                    },
-                   {
-                      icon: require('./assets/car_online.png'),
-                      speed:3,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position:  [121.02478981018068,29.1161647439003],
-                    },
-                    {
-                      icon: require('./assets/car_online.png'),
-                      speed:3,
-                      title:"湘A23455",
-                      content: "<div class='card'><div class='pop-up-top'>" +
-                        "<span class='pop-up-tit f-left'><strong>33</strong></span>" +
-                        "</div>" +
-                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                        "<div class='pop-up-middle'>" +
-                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                        "</div>" +
-                        "</div>",
-                      position: [121.0260719060898,29.115327894687653]
+    setSpeed(value){
+      this.speed = value
+    },
+     initData(trackList,stationList){ //处理数据
+    
+            let wzdata = [];  //位置表格数据
+            let lineArr = []; //坐标数组 
+            let max = 0;//设置eharts的最大值
+            let ljlc = 0; //累计里程
+            let index = 0;//索引
+            this.total = 0;this.more ={};
+            this.wzTablePage = 1;
+            this.wzTableNum = 50;
+            this.wzShowData = [];
+            this.wzdata = [];
+            this.index = 0; //数据索引
+            this.bfIndex = 0; //百分比
+             let xssc = 0 //行驶时长
+             let xs_kssj ="";let xs_jssj="";let isXs = false;
+             let sjArr = [];let sdArr = [];
+             if(trackList === null || trackList.length === 0){//没有数据
+                 return;
+             }else{
+                 this.total = trackList.length-1; //数据总数，用于显示百分比进度条
+                 max = trackList[0].Speed; //设置eharts的最大值
+                 ljlc = trackList[0]; //累计里程
+             }
+             if(!this.lockstar){
+                 trackList.forEach(item => {
+                    if(index > 0){
+                        ljlc = this.getCumulativeMileage(item,wzdata[index-1]);//里程计算
+                    }else{
+                        ljlc = 0;
                     }
-            ] 
-      let stationList = [
-        {
-        id: "11",
-        position: [120.97202539443971,29.149083495140076],
-        title:"11",
-        icon: require('./assets/station.png')
-      },
-          {
-        id: "22",
-        position: [120.97543716430665,29.14593994617462],
-        title:"22",
-        icon: require('./assets/station.png')
-      },
-       {
-        id: "33",
-        position: [121.0260719060898,29.115327894687653],
-        title:"33",
-        icon: require('./assets/station.png'),
-      },
-    ]
-      this.$refs.map.setPolyline(stationList, routeCoords)
+                    let wzxx = Object.assign( {index:index,ljlc:ljlc,xssc:xssc},item)
+                    
+                    if(item.Speed != 0){//计算行驶时长
+                        if(isXs){
+                            xs_jssj = new Date(item.GpsTime);
+                            xssc += Math.round((xs_jssj - xs_kssj)/1000)
+                            wzxx.xssc = xssc;
+                        }
+                        xs_kssj = new Date(item.GpsTime);
+                        isXs = true;
+                    }else{
+                        isXs = false;
+                    }
+                    wzdata.push(wzxx)
+    
+                    sdArr.push(item.Speed);
+                    sjArr.push(item.GpsTime);
+                    if(item.Speed > max){ //最大速度，用于echarts显示高度设置
+                        max = item.Speed
+                    }
+                    lineArr.push({x:item.Lat,y:item.Lon})  //坐标添加
+                
+                    index++; 
+                 });
+             }
+
+            this.wzdata = Object.freeze(wzdata);
+            this.wzShowData = this.wzdata.slice(0,this.wzTableNum)
+            this.lineArr = lineArr;
+            this.$refs.map.setsetPoly(stationList, this.wzdata)
+           // this.$refs.mapView.setPolyline()
+           
+        },
+         getCumulativeMileage(pos,pos_a){
+            var result = 0;
+            if(pos.n_lcjs>0&&pos_a.n_lcjs>0){
+                let n_jsgdjl = pos.n_lcjs - pos_a.n_lcjs;	//距上个点距离
+                let n_jsgdsj = (new Date(pos.GpsTime) - new Date(pos_a.GpsTime))/1000;	//距上个点时间
+                
+                if(n_jsgdsj>0&&n_jsgdjl>0){
+                    let n_pjms = n_jsgdjl/n_jsgdsj;		//平均秒速
+                    
+                    if(n_pjms<40  || (n_jsgdsj<10 && n_pjms<100)){	//平均秒速小于40米才有效(144km/h)
+                        result = result + n_jsgdjl;
+                    }
+                }
+            }
+
+            result += Number(pos_a.ljlc);
+            
+            return result.toFixed(1);
+        },
+    setPolyline(){
+      let gj = require("./base/gj.json")
+      let station = require("./base/rw.json")
+      this.initData(gj.data.rows,station.data.rwmx)
+      // this.$refs.map.setPolyline(stationList, routeCoords)
     },
     setRoute(){
        let routeCoords =
@@ -446,6 +306,49 @@ html,body{
 .card {
   width: 190px;
 }
+.gjhf-card{
+    width: 300px;
+    
+}
+.table-boedered>tbody > tr >td{
+  border: 1px solid #ddd;
+}
+table {
+    display: table;
+    border-collapse: separate;
+    box-sizing: border-box;
+    border-spacing: .1px;
+    border-color: grey;
+}
+.table>tbody > tr >td{
+  border: 1px solid #ddd;
+   padding: 2px 3px;
+  vertical-align: middle;
+  
+}
+.gjhf-card>table{
+  margin-bottom: 0;
+  width: 100%;
+  border: 1px solid #ddd;
+  max-width: 100%;
+}
+.gjhf-card>.pop-up-middle>.row-fluid{
+  line-height: 1.5em;
+   margin: 5px 0px;
+   width: 50%;
+   text-align: left;
+   display: inline-block;
+}
+/* .gjhf-card > .pop-up-top{
+        background-color: #e4e8f0;
+        height: 31px;
+        line-height: 31px;
+        padding: 0 12px;
+} */
+/* .gjhf-card > .pop-up-top >#toSsjk{
+  margin-right:30px;
+  float: right;
+  } */
 .card>.pop-up-middle{
     color: #555555;
     font-size: 12px;

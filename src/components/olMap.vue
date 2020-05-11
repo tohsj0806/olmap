@@ -6,9 +6,9 @@
       <div id="popup-content" ref="content">
       </div>
     </div>
-    <div id="popup" class="ol-popup" ref="popup" v-show="tooltipShow">
-      <a href="#" id="popup-closer" class="ol-popup-closer" @click="closePopup"></a>
-      <div id="popup-content" ref="content">
+    <div id="tipPop" class="ol-popup" ref="tipPop" v-show="tooltipShow">
+      <a href="#" id="tipPop-closer" class="ol-popup-closer" @click="closeTipPopup"></a>
+      <div id="popup-content" ref="content1">
       </div>
     </div>
     <!--搜索框-->
@@ -34,6 +34,7 @@
 
 <script>
 import "ol/ol.css"
+import mapMinxin from "@/base/mapUtils.js"
 import {Map, View} from "ol"
 import Point from 'ol/geom/Point'
 import LineString from 'ol/geom/LineString'
@@ -54,6 +55,7 @@ import {getVectorContext} from 'ol/render';
 
 export default {
   name: 'olMap',
+  mixins: [mapMinxin],
   props: {
     modal: {
       
@@ -64,6 +66,18 @@ export default {
     },
     mapSource:{
       type:String
+    },
+    gjms:{
+      type:Boolean,
+      default:false
+    },
+    cljz:{
+      type:Boolean,
+      default:false
+    },
+    xxcgs:{
+      type:Boolean,
+      default:false
     },
     zoom:{
       type: Number
@@ -100,7 +114,7 @@ export default {
       now:null,
       geoMarker:null,
       progress:0,
-      tooltipShow:false
+      tooltipShow:true
     }
   },
   watch: {
@@ -122,6 +136,25 @@ export default {
       },
         immediate: true
     },
+    'speed':{
+      handler: function(val, oldVal){
+        if(this.map && val !== oldVal){
+          //console.log(val)
+         // this.setPolyline(this.markersData,this.polylineItems)
+         // this.startAnimation(true)
+        }
+      },
+        immediate: true
+    },
+    'gjms':{
+      handler: function(val, oldVal){
+        if(this.map && val !== oldVal){
+          this.setPolyline(this.markersData,this.polylineItems)
+          this.startAnimation(true)
+        }
+      },
+        immediate: true
+    },
     'center':{
       handler: function(val, oldVal){
        if(this.map && val !== oldVal){
@@ -138,10 +171,72 @@ export default {
   
   },
   methods:{
-    
-
+    pointListType(pointList){
+      let ponitLists=[]
+      pointList.forEach(item=>{
+        let point ={}
+        point.speed = item.Speed
+        point.title= "川ZD0667"
+        point.position = [item.Lon,item.Lat]
+         var img = this.getMarkerIconByType(this.getDirectionByAngle(item.Fx).jd);
+        point.icon = require('@/assets/' + img)
+        point.content=`<div class='gjhf-card'>
+                      <table border class='table table-bordered'>
+                      <tbody>
+                      <tr>
+                       <td style="font-weight:bold;text-align: center;">里程</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">时长</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">速度</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">ACC</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">位置</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">方向</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">时间</td><td style="text-align: center;display:block;">2020-05-09 09:05:00</td> <td style="font-weight:bold;text-align: center;">位置</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">来源</td><td style="text-align: center;display:block;">0.7公里</td> 
+                      </tr>
+                      </tbody>
+            </div>`,
+        ponitLists.push(point)
+      })
+      return ponitLists
+    },
+    stationListType(stationList){
+      let stationLists=[]
+      
+      stationList.forEach(item=>{
+        let station ={}
+        station.icon = require('../assets/station.png')
+        station.id = item.id.toString()
+        station.position = [item.zdjd,item.zdwd]
+        station.title = item.zdmc
+        station.content="<div class='card'><div class='pop-up-top'>" +
+                    "<span class='pop-up-tit f-left'><strong>"+item.zdmc+"</strong></span>" +
+                    "</div>" +
+                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                    "<div class='pop-up-middle'>" +
+                    "<div class='row-fluid'><label>站点简称：</label><span>"+item.zdjc+"</span></div>" +
+                    "<div class='row-fluid'><label>站点半径：</label><span>"+item.zdbj+"</span></div>" +
+                    "<div class='row-fluid'><label>站点类型：</label><span>"+item.zdlx+"</span></div>" +
+                    "<div class='row-fluid'><label>联系人：</label><span>"+item.lxr+"</span></div>" +
+                    "<div class='row-fluid'><label>联系电话：</label><span>"+item.lxdh+"</span></div>" +
+                    "</div>" +
+                    "</div>",
+        stationLists.push(station)
+      })
+      return stationLists
+    },
     //轨迹回放
+    setsetPoly(stationList, pointList){
+      let stationLists= this.stationListType(stationList)
+      let pointLists = this.pointListType(pointList)
+      this.setPolyline(stationLists,pointLists)
+    },
     setPolyline(stationList, pointList){
+     
       this.clearMap()
       let icon = require('../assets/station.png')
       this.route = []
@@ -154,12 +249,12 @@ export default {
       }) 
       polylineFeature.setStyle(this.lineStyle)
       this.vectorLineSource.addFeature(polylineFeature)
-      this.map.getView().setCenter([120.9764349460602,29.144577383995056])
+      //this.map.getView().setCenter([116.31441317113486, 39.89635729104322])
       //设置站点
       stationList.forEach((item, index)=>{
         let title = item.title
         if(index === 0) title = item.title + "(起点)"
-        if(index === stationList.length -1)  item.title + "(终点)"
+        if(index === stationList.length -1)  title = item.title + "(终点)"
         let stationPoint = new Feature({
           id:item.id,
           geometry: new Point(item.position),
@@ -169,8 +264,11 @@ export default {
         stationPoint.setStyle(this.createLabelStyle(stationPoint))
         this.vectorLineSource.addFeature(stationPoint)
       })
+      this.map.addOverlay(this.setPopup("popup"));
+      this.markersData = stationList
+      this.map.on('click', this.Popup);
 
-      //移动坐标
+      // //移动坐标
       this.geoMarker = new Feature({
         id:"movePoint",
         icon: pointList[0].icon,
@@ -179,7 +277,6 @@ export default {
       })
       this.geoMarker.setStyle(this.createLabelStyle(this.geoMarker))
       this.vectorLineSource.addFeature(this.geoMarker)
-
       window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
       let cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame
 
@@ -222,22 +319,27 @@ export default {
     },
     moveFeature(event){
       this.progress += 1
-      let car = require('../assets/car.png')
       let polylineItem = this.polylineItems[Math.floor(this.progress/this.speed)]
+      this.map.addOverlay(this.setPopup("tipPop"));
+      
       if(this.progress%this.speed==0){
         //进度
-        //console.log((this.progress/this.speed/(this.route.length-1)*100).toFixed(2) + "%")
+        console.log((this.progress/this.speed/(this.route.length-1)*100).toFixed(2) + "%")
         let currentPoint = new Point(this.route[this.progress/this.speed])
         let dx = this.route[this.progress/this.speed][0] - this.route[this.progress/this.speed-1][0]
         let dy = this.route[this.progress/this.speed][1] - this.route[this.progress/this.speed-1][1]
         let rotation = Math.atan2(dy, dx);
         let movePoint = this.vectorLineSource.getFeatures().find(item => item.get('id') == "movePoint")
+        console.log(1)
+        console.log(this.vectorLineSource.getFeatures())
+        console.log(movePoint)
         this.vectorLineSource.removeFeature(movePoint)
+        if(this.cljz)  this.setCenter(currentPoint.flatCoordinates);
+        if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
         let currentFeature = new Feature({
           id:"movePoint",
           geometry: currentPoint
         })
-        console.log(this.progress/this.speed)
         currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
         this.vectorLineSource.addFeature(currentFeature)
       }
@@ -245,15 +347,19 @@ export default {
         let arcGenerator = new arc.GreatCircle(
                 {x: this.route[Math.floor(this.progress/this.speed)][0], y: this.route[Math.floor(this.progress/this.speed)][1]},
                 {x: this.route[Math.floor(this.progress/this.speed+1)][0], y: this.route[Math.floor(this.progress/this.speed+1)][1]});
-
         let arcLine = arcGenerator.Arc(this.speed, {offset: 0});//在两个点之间生成100个点
+        
         let currentPoint = new Point(arcLine.geometries[0].coords[this.progress%this.speed]);
         let dx = arcLine.geometries[0].coords[this.progress%this.speed][0] - arcLine.geometries[0].coords[this.progress%this.speed-1][0];
         let dy = arcLine.geometries[0].coords[this.progress%this.speed][1] - arcLine.geometries[0].coords[this.progress%this.speed-1][1];
         let rotation = Math.atan2(dy, dx);
         let movePoint = this.vectorLineSource.getFeatures().find(item => item.get('id') == "movePoint")
+        if(this.cljz)  this.setCenter(currentPoint.flatCoordinates);
+        if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
+        console.log(2)
+        console.log(this.vectorLineSource.getFeatures())
+        console.log(movePoint)
         this.vectorLineSource.removeFeature(movePoint)
-
         let currentFeature = new Feature({
           id:"movePoint",
           geometry: currentPoint
@@ -269,13 +375,20 @@ export default {
         let lineFeature = new Feature({
           geometry: new LineString(positions, 'XY')
         })
-        if(polylineItem.speed == 1) lineFeature.setStyle(this.lineMoveStyle1)
-        else if(polylineItem.speed == 3) lineFeature.setStyle(this.lineMoveStyle2)
-        else lineFeature.setStyle(this.lineMoveStyle)
+        if(this.gjms){
+          if(polylineItem.speed < 19) lineFeature.setStyle(this.lineMoveStyle1)
+          else if(19 < polylineItem.speed < 39) lineFeature.setStyle(this.lineMoveStyle2)
+          else if(39 < polylineItem.speed < 79) lineFeature.setStyle(this.lineMoveStyle)
+          else lineFeature.setStyle(this.lineMoveStyle3)
+        }else{
+          lineFeature.setStyle(this.lineMoveStyle)
+        }
+
         this.vectorLineSource.addFeature(lineFeature)
 
       }
-
+      this.tooltipShow =true
+      
       if (this.progress/this.speed < this.route.length-1) {
         this.animation = requestAnimationFrame(this.moveFeature)
       }
@@ -321,26 +434,7 @@ export default {
 
       this.map.addOverlay(this.setPopup("popup"));
       this.markersData = stationList
-      this.map.on('click', function (evt) {
-        //判断当前单击处是否有要素，捕获到要素时弹出popup
-        var feature = self.map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) { return feature });
-        if (feature && feature.get('id')){
-          let popupData = self.markersData.find(item => item.id == feature.get('id'))
-          var content = popupData.content;
-          var title = popupData.title;
-          self.featuerInfo.geo = popupData.position
-          self.featuerInfo.att.text = content;//正文
-          self.featuerInfo.att.title = title;//标题
-          self.$refs.content.innerHTML = ''; //清空popup的内容容器
-          self.addFeatrueInfo(self.featuerInfo); //在popup中加载当前要素的具体信息
-          let popup = self.map.getOverlayById("popup")
-          self.popupShow = true
-          popup.setPosition(popupData.position); //设置popup的位置
-          self.map.getView().setCenter(popupData.position)
-        }
-      });
-
-
+      this.map.on('click', this.Popup);
 
       //设置缩放
       let mapPadding = [80, 60, 80, 60] 
@@ -351,7 +445,40 @@ export default {
         nearest: true
       })
     },
-
+    Popup(evt){
+      //判断当前单击处是否有要素，捕获到要素时弹出popup
+      var feature = this.map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) { return feature });
+      if (feature && feature.get('id')){
+        let popupData = this.markersData.find(item => item.id == feature.get('id'))
+        if(popupData){
+          var content = popupData.content;
+          var title = popupData.title;
+          this.featuerInfo.geo = popupData.position
+          this.featuerInfo.att.text = content;//正文
+          this.featuerInfo.att.title = title;//标题
+          this.$refs.content.innerHTML = ''; //清空popup的内容容器
+          this.addFeatrueInfo(this.featuerInfo,true); //在popup中加载当前要素的具体信息
+          let popup = this.map.getOverlayById("popup")
+          this.popupShow = true
+          popup.setPosition(popupData.position); //设置popup的位置
+          this.map.getView().setCenter(popupData.position)
+        }
+       
+      }
+    },
+    TipPop(data,point){
+       var content = data.content;
+          var title = data.title;
+          this.featuerInfo.geo = point
+          this.featuerInfo.att.text = content;//正文
+          this.featuerInfo.att.title = title;//标题
+          this.$refs.content1.innerHTML = ''; //清空popup的内容容器
+          this.addFeatrueInfo(this.featuerInfo,false); //在popup中加载当前要素的具体信息
+          let popup = this.map.getOverlayById("tipPop")
+          this.tooltipShow = true
+          popup.setPosition(point); //设置popup的位置
+         // this.map.getView().setCenter(data.position)
+    },
     initMap(){
       let map = this.$refs.rootmap
       map.style.cursor = "pointer"
@@ -449,7 +576,7 @@ export default {
           this.featuerInfo.att.text = marker.content ||  marker.title;//正文
           this.featuerInfo.att.title = marker.title;//标题
           this.$refs.content.innerHTML = ''; //清空popup的内容容器
-          this.addFeatrueInfo(this.featuerInfo); //在popup中加载当前要素的具体信息
+          this.addFeatrueInfo(this.featuerInfo,true); //在popup中加载当前要素的具体信息
           this.map.getView().setCenter(marker.position)
       }
     },
@@ -477,24 +604,7 @@ export default {
       })
       this.map.addOverlay(this.setPopup("popup"));
       this.markersData = markers
-      this.map.on('click', function (evt) {
-        //判断当前单击处是否有要素，捕获到要素时弹出popup
-        var feature = self.map.forEachFeatureAtPixel(evt.pixel, function (feature, layer) { return feature; });
-        if (feature && feature.get('id')){
-          let popupData = self.markersData.find(item => item.id == feature.get('id'))
-          var content = popupData.content;
-          var title = popupData.title;
-          self.featuerInfo.geo = popupData.position
-          self.featuerInfo.att.text = content;//正文
-          self.featuerInfo.att.title = title;//标题
-          self.$refs.content.innerHTML = ''; //清空popup的内容容器
-          self.addFeatrueInfo(self.featuerInfo); //在popup中加载当前要素的具体信息
-          let popup = self.map.getOverlayById("popup")
-          self.popupShow = true
-          popup.setPosition(popupData.position); //设置popup的位置
-          self.map.getView().setCenter(popupData.position)
-        }
-      });
+       this.map.on('click', this.Popup);
 
       if(markers.length > 1){
         let extent = this.vectorPointSource.getExtent()
@@ -515,7 +625,7 @@ export default {
     * 动态创建popup的具体内容
     * @param {string} title 
     */
-    addFeatrueInfo(info) {        
+    addFeatrueInfo(info,boolen) {        
       //新增a元素
       // var elementA = document.createElement('a');
       // elementA.className = "markerInfo";
@@ -526,7 +636,7 @@ export default {
       elementDiv.className = "markerText";
       //elementDiv.innerText = info.att.text;
       this.setInnerText(elementDiv, info.att.text);
-      this.$refs.content.appendChild(elementDiv); // 为content添加div子节点     
+      boolen ?  this.$refs.content.appendChild(elementDiv):this.$refs.content1.appendChild(elementDiv); // 为content添加div子节点     
     },
     /**
     * 动态设置元素文本内容（兼容）
@@ -559,6 +669,14 @@ export default {
         })
     },
      lineMoveStyle2(){
+      return new Style({
+          stroke: new Stroke({
+            //width: 6, color: "#cfe7b4"
+            width: 6, color: "#FF0AF7"
+          }),
+        })
+    },
+     lineMoveStyle3(){
       return new Style({
           stroke: new Stroke({
             //width: 6, color: "#cfe7b4"
@@ -607,10 +725,11 @@ export default {
     * @param {} popup要素 
     */
     setPopup(id){
-      return new Overlay({
+      if(id=='popup'){
+        return new Overlay({
           id: id,
           //要转换成overlay的HTML元素
-          element: this.$refs.popup,
+          element:this.$refs.popup,
           //当前窗口可见
           autoPan: true,
           //Popup放置的位置
@@ -618,11 +737,31 @@ export default {
           //是否应该停止事件传播到地图窗口
           stopEvent: false,
       });
+      }else{
+        return new Overlay({
+          id: id,
+          //要转换成overlay的HTML元素
+          element:this.$refs.tipPop,
+          //当前窗口可见
+          autoPan: true,
+          //Popup放置的位置
+          positioning: 'bottom-center',
+          //是否应该停止事件传播到地图窗口
+          stopEvent: false,
+      });
+      }
+      
     },
     closePopup(){
       let popup = this.map.getOverlayById("popup")
       if(popup) popup.setPosition(undefined);
       this.popupShow = false
+      return false;
+    },
+    closeTipPopup(){
+      let popup = this.map.getOverlayById("tipPop")
+      if(popup) popup.setPosition(undefined);
+      this.tooltipShow = false
       return false;
     },
     /**
