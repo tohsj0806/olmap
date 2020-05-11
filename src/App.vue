@@ -28,11 +28,13 @@
 
 <script>
 import olMap from './components/olMap.vue'
+import mapMinxin from "./base/mapUtils.js"
 export default {
   name: 'App',
   components: {
     olMap
   },
+   mixins: [mapMinxin],
   data(){
     return {
       zoom:11,
@@ -55,88 +57,66 @@ export default {
     setSpeed(value){
       this.speed = value
     },
+    pointListType(pointList){
+      let ponitLists=[]
+      pointList.forEach(item=>{
+        let point ={}
+        point.speed = item.Speed
+        point.title= "川ZD0667"
+        point.position = [item.Lon,item.Lat]
+         var img = this.getMarkerIconByType(this.getDirectionByAngle(item.Fx).jd);
+        point.icon = require('./assets/' + img)
+        point.content=`<div class='gjhf-card'>
+                      <table border class='table table-bordered'>
+                      <tbody>
+                      <tr>
+                       <td style="font-weight:bold;text-align: center;">里程</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">时长</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">速度</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">ACC</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">位置</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">方向</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">时间</td><td style="text-align: center;display:block;">2020-05-09 09:05:00</td> <td style="font-weight:bold;text-align: center;">位置</td><td style="text-align: center;display:block;">0.7公里</td>
+                      </tr>
+                       <tr>
+                       <td style="font-weight:bold;text-align: center;">来源</td><td style="text-align: center;display:block;">0.7公里</td> 
+                      </tr>
+                      </tbody>
+            </div>`,
+        ponitLists.push(point)
+      })
+      return ponitLists
+    },
+    stationListType(stationList){
+      let stationLists=[]
+      
+      stationList.forEach(item=>{
+        let station ={}
+        station.icon = require('./assets/station.png')
+        station.id = item.id
+        station.position = [item.zdjd,item.zdwd]
+        station.title = item.zdmc
+        station.content="<div class='card'><div class='pop-up-top'>" +
+                    "<span class='pop-up-tit f-left'><strong>"+item.zdmc+"</strong></span>" +
+                    "</div>" +
+                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                    "<div class='pop-up-middle'>" +
+                    "<div class='row-fluid'><label>站点简称：</label><span>"+item.zdjc+"</span></div>" +
+                    "<div class='row-fluid'><label>站点半径：</label><span>"+item.zdbj+"</span></div>" +
+                    "<div class='row-fluid'><label>站点类型：</label><span>"+item.zdlx+"</span></div>" +
+                    "<div class='row-fluid'><label>联系人：</label><span>"+item.lxr+"</span></div>" +
+                    "<div class='row-fluid'><label>联系电话：</label><span>"+item.lxdh+"</span></div>" +
+                    "</div>" +
+                    "</div>",
+        stationLists.push(station)
+      })
+      return stationLists
+    },
      initData(trackList,stationList){ //处理数据
-    
-            let wzdata = [];  //位置表格数据
-            let lineArr = []; //坐标数组 
-            let max = 0;//设置eharts的最大值
-            let ljlc = 0; //累计里程
-            let index = 0;//索引
-            this.total = 0;this.more ={};
-            this.wzTablePage = 1;
-            this.wzTableNum = 50;
-            this.wzShowData = [];
-            this.wzdata = [];
-            this.index = 0; //数据索引
-            this.bfIndex = 0; //百分比
-             let xssc = 0 //行驶时长
-             let xs_kssj ="";let xs_jssj="";let isXs = false;
-             let sjArr = [];let sdArr = [];
-             if(trackList === null || trackList.length === 0){//没有数据
-                 return;
-             }else{
-                 this.total = trackList.length-1; //数据总数，用于显示百分比进度条
-                 max = trackList[0].Speed; //设置eharts的最大值
-                 ljlc = trackList[0]; //累计里程
-             }
-             if(!this.lockstar){
-                 trackList.forEach(item => {
-                    if(index > 0){
-                        ljlc = this.getCumulativeMileage(item,wzdata[index-1]);//里程计算
-                    }else{
-                        ljlc = 0;
-                    }
-                    let wzxx = Object.assign( {index:index,ljlc:ljlc,xssc:xssc},item)
-                    
-                    if(item.Speed != 0){//计算行驶时长
-                        if(isXs){
-                            xs_jssj = new Date(item.GpsTime);
-                            xssc += Math.round((xs_jssj - xs_kssj)/1000)
-                            wzxx.xssc = xssc;
-                        }
-                        xs_kssj = new Date(item.GpsTime);
-                        isXs = true;
-                    }else{
-                        isXs = false;
-                    }
-                    wzdata.push(wzxx)
-    
-                    sdArr.push(item.Speed);
-                    sjArr.push(item.GpsTime);
-                    if(item.Speed > max){ //最大速度，用于echarts显示高度设置
-                        max = item.Speed
-                    }
-                    lineArr.push({x:item.Lat,y:item.Lon})  //坐标添加
-                
-                    index++; 
-                 });
-             }
-
-            this.wzdata = Object.freeze(wzdata);
-            this.wzShowData = this.wzdata.slice(0,this.wzTableNum)
-            this.lineArr = lineArr;
-            this.$refs.map.setsetPoly(stationList, this.wzdata)
-           // this.$refs.mapView.setPolyline()
-           
-        },
-         getCumulativeMileage(pos,pos_a){
-            var result = 0;
-            if(pos.n_lcjs>0&&pos_a.n_lcjs>0){
-                let n_jsgdjl = pos.n_lcjs - pos_a.n_lcjs;	//距上个点距离
-                let n_jsgdsj = (new Date(pos.GpsTime) - new Date(pos_a.GpsTime))/1000;	//距上个点时间
-                
-                if(n_jsgdsj>0&&n_jsgdjl>0){
-                    let n_pjms = n_jsgdjl/n_jsgdsj;		//平均秒速
-                    
-                    if(n_pjms<40  || (n_jsgdsj<10 && n_pjms<100)){	//平均秒速小于40米才有效(144km/h)
-                        result = result + n_jsgdjl;
-                    }
-                }
-            }
-
-            result += Number(pos_a.ljlc);
-            
-            return result.toFixed(1);
+      this.$refs.map.setPolyline(this.stationListType(stationList),this.pointListType(trackList))
         },
     setPolyline(){
       let gj = require("./base/gj.json")

@@ -34,7 +34,6 @@
 
 <script>
 import "ol/ol.css"
-import mapMinxin from "@/base/mapUtils.js"
 import {Map, View} from "ol"
 import Point from 'ol/geom/Point'
 import LineString from 'ol/geom/LineString'
@@ -55,7 +54,6 @@ import {getVectorContext} from 'ol/render';
 
 export default {
   name: 'olMap',
-  mixins: [mapMinxin],
   props: {
     modal: {
       
@@ -142,8 +140,8 @@ export default {
       handler: function(val, oldVal){
         if(this.map && val !== oldVal){
           //console.log(val)
-         // this.setPolyline(this.markersData,this.polylineItems)
-         // this.startAnimation(true)
+         this.setPolyline(this.markersData,this.polylineItems)
+         this.startAnimation(true)
         }
       },
         immediate: true
@@ -173,72 +171,8 @@ export default {
   
   },
   methods:{
-    pointListType(pointList){
-      let ponitLists=[]
-      pointList.forEach(item=>{
-        let point ={}
-        point.speed = item.Speed
-        point.title= "川ZD0667"
-        point.position = [item.Lon,item.Lat]
-         var img = this.getMarkerIconByType(this.getDirectionByAngle(item.Fx).jd);
-        point.icon = require('@/assets/' + img)
-        point.content=`<div class='gjhf-card'>
-                      <table border class='table table-bordered'>
-                      <tbody>
-                      <tr>
-                       <td style="font-weight:bold;text-align: center;">里程</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">时长</td><td style="text-align: center;display:block;">0.7公里</td>
-                      </tr>
-                       <tr>
-                       <td style="font-weight:bold;text-align: center;">速度</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">ACC</td><td style="text-align: center;display:block;">0.7公里</td>
-                      </tr>
-                       <tr>
-                       <td style="font-weight:bold;text-align: center;">位置</td><td style="text-align: center;display:block;">0.7公里</td> <td style="font-weight:bold;text-align: center;">方向</td><td style="text-align: center;display:block;">0.7公里</td>
-                      </tr>
-                       <tr>
-                       <td style="font-weight:bold;text-align: center;">时间</td><td style="text-align: center;display:block;">2020-05-09 09:05:00</td> <td style="font-weight:bold;text-align: center;">位置</td><td style="text-align: center;display:block;">0.7公里</td>
-                      </tr>
-                       <tr>
-                       <td style="font-weight:bold;text-align: center;">来源</td><td style="text-align: center;display:block;">0.7公里</td> 
-                      </tr>
-                      </tbody>
-            </div>`,
-        ponitLists.push(point)
-      })
-      return ponitLists
-    },
-    stationListType(stationList){
-      let stationLists=[]
-      
-      stationList.forEach(item=>{
-        let station ={}
-        station.icon = require('../assets/station.png')
-        station.id = item.id.toString()
-        station.position = [item.zdjd,item.zdwd]
-        station.title = item.zdmc
-        station.content="<div class='card'><div class='pop-up-top'>" +
-                    "<span class='pop-up-tit f-left'><strong>"+item.zdmc+"</strong></span>" +
-                    "</div>" +
-                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                    "<div class='pop-up-middle'>" +
-                    "<div class='row-fluid'><label>站点简称：</label><span>"+item.zdjc+"</span></div>" +
-                    "<div class='row-fluid'><label>站点半径：</label><span>"+item.zdbj+"</span></div>" +
-                    "<div class='row-fluid'><label>站点类型：</label><span>"+item.zdlx+"</span></div>" +
-                    "<div class='row-fluid'><label>联系人：</label><span>"+item.lxr+"</span></div>" +
-                    "<div class='row-fluid'><label>联系电话：</label><span>"+item.lxdh+"</span></div>" +
-                    "</div>" +
-                    "</div>",
-        stationLists.push(station)
-      })
-      return stationLists
-    },
     //轨迹回放
-    setsetPoly(stationList, pointList){
-      let stationLists= this.stationListType(stationList)
-      let pointLists = this.pointListType(pointList)
-      this.setPolyline(stationLists,pointLists)
-    },
     setPolyline(stationList, pointList){
-     
       this.clearMap()
       let icon = require('../assets/station.png')
       this.route = []
@@ -326,6 +260,7 @@ export default {
       if(this.xxcgs) this.TipPop(polylineItem,polylineItem.position);
       if(this.progress%this.speed==0){
         //进度
+        console.log((this.progress/this.speed/(this.route.length-1)*100).toFixed(2))
         this.$emit("positionJd", (this.progress/this.speed/(this.route.length-1)*100).toFixed(2))
         let currentPoint = new Point(this.route[this.progress/this.speed])
         let dx = this.route[this.progress/this.speed][0] - this.route[this.progress/this.speed-1][0]
