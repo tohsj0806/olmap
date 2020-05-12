@@ -261,8 +261,7 @@ export default {
       if(this.xxcgs) this.TipPop(polylineItem,polylineItem.position);
       if(this.progress%this.speed==0){
         //进度
-        console.log((this.progress/this.speed/(this.route.length-1)*100).toFixed(2))
-        this.$emit("positionJd", (this.progress/this.speed/(this.route.length-1)*100).toFixed(2))
+        this.$emit("positionJd", (this.progress/this.speed/(this.route.length-1)*100).toFixed(2),polylineItem)
         let currentPoint = new Point(this.route[this.progress/this.speed])
         let dx = this.route[this.progress/this.speed][0] - this.route[this.progress/this.speed-1][0]
         let dy = this.route[this.progress/this.speed][1] - this.route[this.progress/this.speed-1][1]
