@@ -1,6 +1,6 @@
 {
   "name": "olmap_module",
-  "version": "1.2.5",
+  "version": "1.2.7",
   "main": "dist/olmap.min.js",
   "scripts": {
     "serve": "vue-cli-service serve",

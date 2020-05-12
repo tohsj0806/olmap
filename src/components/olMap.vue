@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import "../util/arc.js"
 import "ol/ol.css"
 import {Map, View} from "ol"
 import Point from 'ol/geom/Point'
