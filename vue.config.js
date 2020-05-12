@@ -18,6 +18,12 @@ module.exports = {
       .set('_c', resolve('src/components'))
   },
   productionSourceMap: false,
+  configureWebpack: {
+    externals: {
+      // 'AMap': 'AMap',
+      "arc": "arc"
+    },
+  },
   devServer: {
     proxy: {
       '/msc': {
