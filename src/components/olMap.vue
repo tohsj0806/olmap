@@ -115,7 +115,7 @@ export default {
       now:null,
       geoMarker:null,
       progress:0,
-      tooltipShow:true
+      tooltipShow:false
     }
   },
   watch: {
