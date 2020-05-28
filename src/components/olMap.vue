@@ -115,7 +115,8 @@ export default {
       now:null,
       geoMarker:null,
       progress:0,
-      tooltipShow:false
+      tooltipShow:false,
+      previousStop:false
     }
   },
   watch: {
@@ -140,7 +141,6 @@ export default {
     'speed':{
       handler: function(val, oldVal){
         if(this.map && val !== oldVal){
-          //console.log(val)
          this.setPolyline(this.markersData,this.polylineItems)
          this.startAnimation(true)
         }
@@ -281,6 +281,47 @@ export default {
         })
         currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
         this.vectorLineSource.addFeature(currentFeature)
+
+         let lineArr = this.polylineItems.slice(this.progress/this.speed+1, this.polylineItems.length);
+         let lineArr1 = this.polylineItems.slice(0,this.progress/this.speed+1);
+           let positions = []
+        lineArr.forEach((item,index)=>{
+          positions.push(item.position)
+        })
+        let positions1 =[]
+        let positions2 =[]
+        let positions3 =[]
+        let positions4 =[]
+        lineArr1.forEach((item,index)=>{
+          if(this.gjms){
+          if(item.speed < 19) positions1.push(item.position)
+          else if(19 < item.speed < 39) positions2.push(item.position)
+          else if(39 < item.speed < 79) positions3.push(item.position)
+          else positions4.push(item.position)
+        }else{
+           positions1.push(item.position)
+        }
+        })
+
+        let lineFeature = new Feature({ geometry: new LineString(positions, 'XY') })
+        let lineFeature1 = new Feature({ geometry: new LineString(positions1, 'XY') })
+        let lineFeature2 = new Feature({ geometry: new LineString(positions2, 'XY') })
+        let lineFeature3 = new Feature({ geometry: new LineString(positions3, 'XY') })
+        let lineFeature4 = new Feature({ geometry: new LineString(positions4, 'XY') })
+         if(this.gjms){
+          if(polylineItem.speed < 19) lineFeature1.setStyle(this.lineMoveStyle1)
+          else if(19 < polylineItem.speed < 39) lineFeature2.setStyle(this.lineMoveStyle2)
+          else if(39 < polylineItem.speed < 79) lineFeature3.setStyle(this.lineMoveStyle)
+          else lineFeature4.setStyle(this.lineMoveStyle3)
+        }else{
+          lineFeature1.setStyle(this.lineMoveStyle)
+        }
+        lineFeature.setStyle(this.lineStyle) 
+        this.vectorLineSource.addFeature(lineFeature)
+        this.vectorLineSource.addFeature(lineFeature1)
+        this.vectorLineSource.addFeature(lineFeature2)
+        this.vectorLineSource.addFeature(lineFeature3)
+        this.vectorLineSource.addFeature(lineFeature4)
         }
         
       }
@@ -313,9 +354,8 @@ export default {
 
         let positions = []
         arcLine.geometries[0].coords.forEach((item,index)=>{
-          if(index <= this.progress%this.speed) positions.push(item)
+          positions.push(item)
         })
-
         let lineFeature = new Feature({
           geometry: new LineString(positions, 'XY')
         })
@@ -327,7 +367,6 @@ export default {
         }else{
           lineFeature.setStyle(this.lineMoveStyle)
         }
-
         this.vectorLineSource.addFeature(lineFeature)
         }
 
@@ -337,10 +376,20 @@ export default {
       if (this.progress/this.speed < this.route.length-1) {
         this.animation = requestAnimationFrame(this.moveFeature)
       }
+      if(this.previousStop){
+        this.pauseAnimation()
+      }
     },
     startAnimation(start){
       if(!start && this.animating){
+        this.previousStop=false
         this.animation = requestAnimationFrame(this.moveFeature)
+      }
+      if(start && this.animating){
+        this.pauseAnimation()
+      }
+      if(start && this.previousStop){
+        this.previousStop=false
       }
       if(start){
         this.progress = 0
@@ -533,6 +582,22 @@ export default {
           this.addFeatrueInfo(this.featuerInfo,true); //在popup中加载当前要素的具体信息
           this.map.getView().setCenter(marker.position)
       }
+    },
+    previousAnimation(){
+      if(Math.floor(this.progress/this.speed)==0)return
+      let index = Math.floor(this.progress/this.speed)
+      this.progress=(index-1)*this.speed
+      if(this.progress>1)this.progress -=1
+      this.previousStop = true
+      this.animation =requestAnimationFrame(this.moveFeature)
+    },
+    previousNextAnimation(){
+      if(Math.floor(this.progress/this.speed)==this.route.length)return
+      let index = Math.floor(this.progress/this.speed)
+      this.progress=(index+1)*this.speed
+      if(this.progress>1)this.progress -=1
+      this.previousStop = true
+      this.animation =requestAnimationFrame(this.moveFeature)
     },
     /**
     * 添加多个新的标注（矢量要素）

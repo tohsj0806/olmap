@@ -20,6 +20,8 @@
       <button @click="gjms=true" style="height:40px;width:150px">轨迹模式-速度</button>
       <button @click="cljz=!cljz" style="height:40px;width:150px">车辆居中</button>
        <button @click="xxcgs=!xxcgs" style="height:40px;width:150px">信息窗跟随</button>
+       <button @click="$refs.map.previousAnimation()" style="height:40px;width:150px">上一条</button>
+       <button @click="$refs.map.previousNextAnimation()" style="height:40px;width:150px">下一条</button>
     </div>
     <ol-map class="map" :modal="modal" ref="map" :zoom="zoom" :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed"
     :center="center" :mapSource="mapSource" @positionResult="getPostionResult"/>
