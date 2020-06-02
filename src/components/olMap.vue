@@ -282,46 +282,72 @@ export default {
         currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
         this.vectorLineSource.addFeature(currentFeature)
 
-         let lineArr = this.polylineItems.slice(this.progress/this.speed+1, this.polylineItems.length);
-         let lineArr1 = this.polylineItems.slice(0,this.progress/this.speed+1);
-           let positions = []
+        let lineArr = this.polylineItems.slice(this.progress/this.speed+1, this.polylineItems.length);
+        let lineArr1 = this.polylineItems.slice(0,this.progress/this.speed+1);
+        let positions = []
         lineArr.forEach((item,index)=>{
           positions.push(item.position)
         })
         let positions1 =[]
-        let positions2 =[]
-        let positions3 =[]
-        let positions4 =[]
-        lineArr1.forEach((item,index)=>{
-          if(this.gjms){
-          if(item.speed < 19) positions1.push(item.position)
-          else if(19 < item.speed < 39) positions2.push(item.position)
-          else if(39 < item.speed < 79) positions3.push(item.position)
-          else positions4.push(item.position)
-        }else{
-           positions1.push(item.position)
-        }
-        })
-
         let lineFeature = new Feature({ geometry: new LineString(positions, 'XY') })
-        let lineFeature1 = new Feature({ geometry: new LineString(positions1, 'XY') })
-        let lineFeature2 = new Feature({ geometry: new LineString(positions2, 'XY') })
-        let lineFeature3 = new Feature({ geometry: new LineString(positions3, 'XY') })
-        let lineFeature4 = new Feature({ geometry: new LineString(positions4, 'XY') })
-         if(this.gjms){
-          if(polylineItem.speed < 19) lineFeature1.setStyle(this.lineMoveStyle1)
-          else if(19 < polylineItem.speed < 39) lineFeature2.setStyle(this.lineMoveStyle2)
-          else if(39 < polylineItem.speed < 79) lineFeature3.setStyle(this.lineMoveStyle)
-          else lineFeature4.setStyle(this.lineMoveStyle3)
+        if(this.gjms){
+          let speedMode=0;
+          let start =0;
+          let end =0;
+          let isChange=false;
+          for(let i=0;i<lineArr1.length;i++){
+            let ob = lineArr1[i];
+            end=i;
+            isChange = false
+            if(ob.speed<=20){
+              if(speedMode!=0&&speedMode!=1){
+                let position =[]
+                this.drawLineSection(start,end,lineArr1,speedMode)
+                isChange = true;
+                start=i
+              }
+              speedMode =1
+            }else if(ob.speed>20 && ob.speed<=40){
+              if(speedMode!=0&&speedMode!=2){
+                 let position =[]
+                 this.drawLineSection(start,end,lineArr1,speedMode)
+              isChange = true;
+              start = i
+              }
+              speedMode =2
+            }else if(ob.speed>40&&ob.speed<=80){
+              if(speedMode!=0&&speedMode!=3){
+                 let position =[]
+                 this.drawLineSection(start,end,lineArr1,speedMode)
+                 
+                isChange =true
+                start = i
+              }
+              speedMode=3
+            }else if(ob.speed>80){
+              if(speedMode!=0&&speedMode!=4){
+                 let position =[]
+                 this.drawLineSection(start,end,lineArr1,speedMode)
+                isChange =true
+                start =i
+              }
+              speedMode = 4
+            }
+
+            if(!isChange&&end ==(lineArr1.length-1)){
+              this.drawLineSection(start,end,lineArr1,speedMode)
+            }
+          }
         }else{
+          lineArr1.forEach((item,index)=>{
+            positions1.push(item.position)
+            })
+          let lineFeature1 = new Feature({ geometry: new LineString(positions1, 'XY') })
           lineFeature1.setStyle(this.lineMoveStyle)
+          this.vectorLineSource.addFeature(lineFeature1)
         }
         lineFeature.setStyle(this.lineStyle) 
         this.vectorLineSource.addFeature(lineFeature)
-        this.vectorLineSource.addFeature(lineFeature1)
-        this.vectorLineSource.addFeature(lineFeature2)
-        this.vectorLineSource.addFeature(lineFeature3)
-        this.vectorLineSource.addFeature(lineFeature4)
         }
         
       }
@@ -354,15 +380,15 @@ export default {
 
         let positions = []
         arcLine.geometries[0].coords.forEach((item,index)=>{
-          positions.push(item)
+          if(index <= this.progress%this.speed) positions.push(item)
         })
         let lineFeature = new Feature({
           geometry: new LineString(positions, 'XY')
         })
         if(this.gjms){
           if(polylineItem.speed < 19) lineFeature.setStyle(this.lineMoveStyle1)
-          else if(19 < polylineItem.speed < 39) lineFeature.setStyle(this.lineMoveStyle2)
-          else if(39 < polylineItem.speed < 79) lineFeature.setStyle(this.lineMoveStyle)
+          else if(19 < polylineItem.speed&&polylineItem.speed < 39) lineFeature.setStyle(this.lineMoveStyle2)
+          else if(39 < polylineItem.speed&&polylineItem.speed < 79) lineFeature.setStyle(this.lineMoveStyle)
           else lineFeature.setStyle(this.lineMoveStyle3)
         }else{
           lineFeature.setStyle(this.lineMoveStyle)
@@ -379,6 +405,22 @@ export default {
       if(this.previousStop){
         this.pauseAnimation()
       }
+    },
+    drawLineSection(start,end,lineArr1,speedMode){
+      let xyAr_line = new Array()
+      let positions =[]
+      let count_line = 0
+      for(let i=start;i<end;i++){
+        xyAr_line[count_line] = lineArr1[i]
+        count_line++
+        }
+        xyAr_line.forEach(item=>positions.push(item.position))
+         let lineFeature1 = new Feature({ geometry: new LineString(positions, 'XY') })
+          if(speedMode==1) lineFeature1.setStyle(this.lineMoveStyle1)
+          else if(speedMode==2) lineFeature1.setStyle(this.lineMoveStyle2)
+          else if(speedMode==3) lineFeature1.setStyle(this.lineMoveStyle)
+          else if(speedMode==4) lineFeature1.setStyle(this.lineMoveStyle3)
+          this.vectorLineSource.addFeature(lineFeature1)
     },
     startAnimation(start){
       if(!start && this.animating){
