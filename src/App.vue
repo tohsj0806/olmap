@@ -9,10 +9,10 @@
       <button @click="$refs.map1.clearMap()" style="height:40px;width:150px">清空地图坐标</button>
       <button @click="setRoute()" style="height:40px;width:150px">邮路规划</button>
       <button @click="setPolyline()" style="height:40px;width:150px">显示轨迹</button>
-      <button @click="$refs.map1.startAnimation(true)" style="height:40px;width:150px">播放轨迹</button>
-      <button @click="$refs.map1.pauseAnimation()" style="height:40px;width:150px">暂停播放</button>
-      <button @click="$refs.map1.startAnimation(false)" style="height:40px;width:150px">继续播放</button>
-      <button @click="$refs.map1.setCenter([114.30, 30.60])" style="height:40px;width:150px">设置中心点</button>
+      <button @click="$refs.map3.startAnimation(true)" style="height:40px;width:150px">播放轨迹</button>
+      <button @click="$refs.map3.pauseAnimation()" style="height:40px;width:150px">暂停播放</button>
+      <button @click="$refs.map3.startAnimation(false)" style="height:40px;width:150px">继续播放</button>
+      <button @click="$refs.map3.setCenter([114.30, 30.60])" style="height:40px;width:150px">设置中心点</button>
       <button @click="setSpeed(100)" style="height:40px;width:50px">慢速</button>
       <button @click="setSpeed(50)" style="height:40px;width:50px">中速</button>
       <button @click="setSpeed(10)" style="height:40px;width:50px">快速</button>
@@ -20,19 +20,21 @@
       <button @click="gjms=true" style="height:40px;width:150px">轨迹模式-速度</button>
       <button @click="cljz=!cljz" style="height:40px;width:150px">车辆居中</button>
       <button @click="xxcgs=!xxcgs" style="height:40px;width:150px">信息窗跟随</button>
-      <button @click="$refs.map1.previousAnimation()" style="height:40px;width:150px">上一条</button>
-      <button @click="$refs.map1.previousNextAnimation()" style="height:40px;width:150px">下一条</button>
+      <button @click="$refs.map3.previousAnimation()" style="height:40px;width:150px">上一条</button>
+      <button @click="$refs.map3.previousNextAnimation()" style="height:40px;width:150px">下一条</button>
       <button @click="setClusterPoints()" style="height:40px;width:150px">动态聚合</button>{{mapShow}}
     </div>
-    <ol-map v-show="mapShow" class="map" :modal="modal" ref="map1" :zoom="zoom" :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed"
+    <ol-map v-show="mapShow==1" class="map" :modal="modal" ref="map1" :zoom="zoom" 
     :center="center" :mapSource="mapSource" @positionResult="getPostionResult"/>
-    <clusterMap ref="map2" class="map" v-show="!mapShow"/>
+    <clusterMap ref="map2" class="map" v-show="mapShow==2"/>
+    <trackThePlaybackMap ref="map3" class="map"  :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed" v-show="mapShow==3"/>
   </div>
 </template>
 
 <script>
 import olMap from './components/olMap.vue'
 import clusterMap from './components/clusterMap.vue'
+import trackThePlaybackMap from './components/trackThePlaybackMap.vue'
 import mapMinxin from "./base/mapUtils.js"
 export default {
   name: 'App',
@@ -42,7 +44,7 @@ export default {
    mixins: [mapMinxin],
   data(){
     return {
-      mapShow:false, // 测试olmaop true，clusterMap false
+      mapShow:3, // 测试olmaop 1，clusterMap 2,trackThePlaybackMap:3
       zoom:11,
       gjms:false,
       cljz:false,
@@ -122,13 +124,12 @@ export default {
       return stationLists
     },
      initData(trackList,stationList){ //处理数据
-      this.$refs.map1.setPolyline(this.stationListType(stationList),this.pointListType(trackList))
+      this.$refs.map3.setPolyline(this.stationListType(stationList),this.pointListType(trackList))
         },
     setPolyline(){
       let gj = require("./base/gj.json")
       let station = require("./base/rw.json")
       this.initData(gj.data.rows,station.data.rwmx)
-      // this.$refs.map1.setPolyline(stationList, routeCoords)
     },
     setRoute(){
        let routeCoords =

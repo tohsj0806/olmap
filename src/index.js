@@ -1,8 +1,10 @@
 import olMap from './components/olMap.vue'
 import clusterMap from './components/clusterMap.vue'
+import trackThePlaybackMap from './components/trackThePlaybackMap.vue'
 let components = [
     olMap,
-    clusterMap
+    clusterMap,
+    trackThePlaybackMap
 ]
 function install(Vue) {
     components.forEach(cpt => {
@@ -12,5 +14,6 @@ function install(Vue) {
 export default {
     install,
     olMap,
-    clusterMap
+    clusterMap,
+    trackThePlaybackMap
 }

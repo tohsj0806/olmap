@@ -6,11 +6,6 @@
       <div id="popup-content" ref="content">
       </div>
     </div>
-    <div id="tipPop" class="ol-popup" ref="tipPop" v-show="tooltipShow">
-      <a href="#" id="tipPop-closer" class="ol-popup-closer" @click="closeTipPopup"></a>
-      <div id="popup-content" ref="content1">
-      </div>
-    </div>
     <!--搜索框-->
     <div class="info" v-show="searchInputShow">
         <div class="input-item-map">
@@ -66,25 +61,9 @@ export default {
     mapSource:{
       type:String
     },
-    gjms:{
-      type:Boolean,
-      default:false
-    },
-    cljz:{
-      type:Boolean,
-      default:false
-    },
-    xxcgs:{
-      type:Boolean,
-      default:false
-    },
     zoom:{
       type: Number
     },
-    speed:{
-      type:Number,
-      default:10
-    }
   },
   data(){
     return {
@@ -115,7 +94,6 @@ export default {
       now:null,
       geoMarker:null,
       progress:0,
-      tooltipShow:false,
       previousStop:false
     }
   },
@@ -138,24 +116,6 @@ export default {
       },
         immediate: true
     },
-    'speed':{
-      handler: function(val, oldVal){
-        if(this.map && val !== oldVal){
-         this.setPolyline(this.markersData,this.polylineItems)
-         this.startAnimation(true)
-        }
-      },
-        immediate: true
-    },
-    'gjms':{
-      handler: function(val, oldVal){
-        if(this.map && val !== oldVal){
-          this.setPolyline(this.markersData,this.polylineItems)
-          this.startAnimation(true)
-        }
-      },
-        immediate: true
-    },
     'center':{
       handler: function(val, oldVal){
        if(this.map && val !== oldVal){
@@ -172,60 +132,6 @@ export default {
   
   },
   methods:{
-    //轨迹回放
-    setPolyline(stationList, pointList){
-      this.clearMap()
-      let icon = require('../assets/station.png')
-      this.route = []
-      this.polylineItems = pointList
-      pointList.forEach(item=>{this.route.push(item.position)})
-  
-
-      let polylineFeature = new Feature({
-        geometry: new LineString(this.route, 'XY')
-      }) 
-      polylineFeature.setStyle(this.lineStyle)
-      this.vectorLineSource.addFeature(polylineFeature)
-      //this.map.getView().setCenter([116.31441317113486, 39.89635729104322])
-      //设置站点
-      stationList.forEach((item, index)=>{
-        let title = item.title
-        if(index === 0) title = item.title + "(起点)"
-        if(index === stationList.length -1)  title = item.title + "(终点)"
-        let stationPoint = new Feature({
-          id:item.id,
-          geometry: new Point(item.position),
-          title:title,
-          icon: item.icon
-        })
-        stationPoint.setStyle(this.createLabelStyle(stationPoint))
-        this.vectorLineSource.addFeature(stationPoint)
-      })
-      this.map.addOverlay(this.setPopup("popup"));
-      this.markersData = stationList
-      this.map.on('click', this.Popup);
-
-      // //移动坐标
-      this.geoMarker = new Feature({
-        id:"movePoint",
-        icon: pointList[0].icon,
-        title: pointList[0].title,
-        geometry: new Point(pointList[0].position)
-      })
-      this.geoMarker.setStyle(this.createLabelStyle(this.geoMarker))
-      this.vectorLineSource.addFeature(this.geoMarker)
-      window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-      let cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame
-
-      //设置缩放
-      let mapPadding = [80, 60, 80, 60] 
-      let extent = this.vectorLineSource.getExtent()
-      this.map.getView().fit(extent, {
-        size: this.map.getSize(),
-        padding: mapPadding,
-        nearest: true
-      })
-    },
     moveFeatureStyle(polylineItem){
       return new Style({
           text: new Text({
@@ -253,196 +159,6 @@ export default {
                 //rotation: rotation
               })
       })
-    },
-    moveFeature(event){
-      this.progress += 1
-      let polylineItem = this.polylineItems[Math.floor(this.progress/this.speed)]
-      this.map.addOverlay(this.setPopup("tipPop"));
-      if(this.xxcgs) this.TipPop(polylineItem,polylineItem.position);
-      if(this.progress%this.speed==0){
-        //进度
-        this.$emit("positionJd", (this.progress/this.speed/(this.route.length-1)*100).toFixed(2),polylineItem)
-        let currentPoint = new Point(this.route[this.progress/this.speed])
-        let dx = this.route[this.progress/this.speed][0] - this.route[this.progress/this.speed-1][0]
-        let dy = this.route[this.progress/this.speed][1] - this.route[this.progress/this.speed-1][1]
-        if(!isNaN(dx)&&!isNaN(dy)){
-          let rotation = Math.atan2(dy, dx);
-        let movePoints = this.vectorLineSource.getFeatures().filter(item => item.get('id') == "movePoint")
-        movePoints.forEach(item=>{
-          this.vectorLineSource.removeFeature(item)
-        })
-        if(this.cljz)  this.setCenter(currentPoint.flatCoordinates);
-        // if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
-        let currentFeature = new Feature({
-          id:"movePoint",
-          icon:polylineItem.icon,
-          title:polylineItem.title,
-          geometry: currentPoint
-        })
-        currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
-        this.vectorLineSource.addFeature(currentFeature)
-
-        let lineArr = this.polylineItems.slice(this.progress/this.speed+1, this.polylineItems.length);
-        let lineArr1 = this.polylineItems.slice(0,this.progress/this.speed+1);
-        let positions = []
-        lineArr.forEach((item,index)=>{
-          positions.push(item.position)
-        })
-        let positions1 =[]
-        let lineFeature = new Feature({ geometry: new LineString(positions, 'XY') })
-        if(this.gjms){
-          let speedMode=0;
-          let start =0;
-          let end =0;
-          let isChange=false;
-          for(let i=0;i<lineArr1.length;i++){
-            let ob = lineArr1[i];
-            end=i;
-            isChange = false
-            if(ob.speed<=20){
-              if(speedMode!=0&&speedMode!=1){
-                let position =[]
-                this.drawLineSection(start,end,lineArr1,speedMode)
-                isChange = true;
-                start=i
-              }
-              speedMode =1
-            }else if(ob.speed>20 && ob.speed<=40){
-              if(speedMode!=0&&speedMode!=2){
-                 let position =[]
-                 this.drawLineSection(start,end,lineArr1,speedMode)
-              isChange = true;
-              start = i
-              }
-              speedMode =2
-            }else if(ob.speed>40&&ob.speed<=80){
-              if(speedMode!=0&&speedMode!=3){
-                 let position =[]
-                 this.drawLineSection(start,end,lineArr1,speedMode)
-                 
-                isChange =true
-                start = i
-              }
-              speedMode=3
-            }else if(ob.speed>80){
-              if(speedMode!=0&&speedMode!=4){
-                 let position =[]
-                 this.drawLineSection(start,end,lineArr1,speedMode)
-                isChange =true
-                start =i
-              }
-              speedMode = 4
-            }
-
-            if(!isChange&&end ==(lineArr1.length-1)){
-              this.drawLineSection(start,end,lineArr1,speedMode)
-            }
-          }
-        }else{
-          lineArr1.forEach((item,index)=>{
-            positions1.push(item.position)
-            })
-          let lineFeature1 = new Feature({ geometry: new LineString(positions1, 'XY') })
-          lineFeature1.setStyle(this.lineMoveStyle)
-          this.vectorLineSource.addFeature(lineFeature1)
-        }
-        lineFeature.setStyle(this.lineStyle) 
-        this.vectorLineSource.addFeature(lineFeature)
-        }
-        
-      }
-      if(this.progress % this.speed!=0){
-        let arcGenerator = new arc.GreatCircle(
-                {x: this.route[Math.floor(this.progress/this.speed)][0], y: this.route[Math.floor(this.progress/this.speed)][1]},
-                {x: this.route[Math.floor(this.progress/this.speed+1)][0], y: this.route[Math.floor(this.progress/this.speed+1)][1]});
-        let arcLine = arcGenerator.Arc(this.speed, {offset: 0});//在两个点之间生成100个点
-        
-        let currentPoint = new Point(arcLine.geometries[0].coords[this.progress%this.speed]);
-        //if(currentPoint.flatCoordinates[0]!=NaN)
-        let dx = arcLine.geometries[0].coords[this.progress%this.speed][0] - arcLine.geometries[0].coords[this.progress%this.speed-1][0];
-        let dy = arcLine.geometries[0].coords[this.progress%this.speed][1] - arcLine.geometries[0].coords[this.progress%this.speed-1][1];
-        if(!isNaN(dx)&&!isNaN(dy)){
-          let rotation = Math.atan2(dy, dx);
-        let movePoints = this.vectorLineSource.getFeatures().filter(item => item.get('id') == "movePoint")
-        if(this.cljz)  this.setCenter(currentPoint.flatCoordinates);
-        // if(this.xxcgs) this.TipPop(polylineItem,currentPoint.flatCoordinates);
-        movePoints.forEach(item=>{
-          this.vectorLineSource.removeFeature(item)
-        })
-        let currentFeature = new Feature({
-          id:"movePoint",
-          icon:polylineItem.icon,
-          title:polylineItem.title,
-          geometry: new Point(currentPoint.flatCoordinates) 
-        })
-        currentFeature.setStyle(this.moveFeatureStyle(polylineItem))
-        this.vectorLineSource.addFeature(currentFeature)
-
-        let positions = []
-        arcLine.geometries[0].coords.forEach((item,index)=>{
-          if(index <= this.progress%this.speed) positions.push(item)
-        })
-        let lineFeature = new Feature({
-          geometry: new LineString(positions, 'XY')
-        })
-        if(this.gjms){
-          if(polylineItem.speed < 19) lineFeature.setStyle(this.lineMoveStyle1)
-          else if(19 < polylineItem.speed&&polylineItem.speed < 39) lineFeature.setStyle(this.lineMoveStyle2)
-          else if(39 < polylineItem.speed&&polylineItem.speed < 79) lineFeature.setStyle(this.lineMoveStyle)
-          else lineFeature.setStyle(this.lineMoveStyle3)
-        }else{
-          lineFeature.setStyle(this.lineMoveStyle)
-        }
-        this.vectorLineSource.addFeature(lineFeature)
-        }
-
-      }
-     // this.tooltipShow =true
-      
-      if (this.progress/this.speed < this.route.length-1) {
-        this.animation = requestAnimationFrame(this.moveFeature)
-      }
-      if(this.previousStop){
-        this.pauseAnimation()
-      }
-    },
-    drawLineSection(start,end,lineArr1,speedMode){
-      let xyAr_line = new Array()
-      let positions =[]
-      let count_line = 0
-      for(let i=start;i<end;i++){
-        xyAr_line[count_line] = lineArr1[i]
-        count_line++
-        }
-        xyAr_line.forEach(item=>positions.push(item.position))
-         let lineFeature1 = new Feature({ geometry: new LineString(positions, 'XY') })
-          if(speedMode==1) lineFeature1.setStyle(this.lineMoveStyle1)
-          else if(speedMode==2) lineFeature1.setStyle(this.lineMoveStyle2)
-          else if(speedMode==3) lineFeature1.setStyle(this.lineMoveStyle)
-          else if(speedMode==4) lineFeature1.setStyle(this.lineMoveStyle3)
-          this.vectorLineSource.addFeature(lineFeature1)
-    },
-    startAnimation(start){
-      if(!start && this.animating){
-        this.previousStop=false
-        this.animation = requestAnimationFrame(this.moveFeature)
-      }
-      if(start && this.animating){
-        this.pauseAnimation()
-      }
-      if(start && this.previousStop){
-        this.previousStop=false
-      }
-      if(start){
-        this.progress = 0
-        this.animating = true
-        this.animation = requestAnimationFrame(this.moveFeature)
-        this.map.render();
-      }
-    },
-    pauseAnimation(){
-      if(this.animation)
-      window.cancelAnimationFrame(this.animation);
     },
     //邮路规划
     setRoute(stationList, routeCoords){
@@ -501,19 +217,6 @@ export default {
         }
        
       }
-    },
-    TipPop(data,point){
-       var content = data.content;
-          var title = data.title;
-          this.featuerInfo.geo = point
-          this.featuerInfo.att.text = content;//正文
-          this.featuerInfo.att.title = title;//标题
-          this.$refs.content1.innerHTML = ''; //清空popup的内容容器
-          this.addFeatrueInfo(this.featuerInfo,false); //在popup中加载当前要素的具体信息
-          let popup = this.map.getOverlayById("tipPop")
-          this.tooltipShow = true
-          popup.setPosition(point); //设置popup的位置
-         // this.map.getView().setCenter(data.position)
     },
     initMap(){
       let map = this.$refs.rootmap
@@ -625,22 +328,6 @@ export default {
           this.map.getView().setCenter(marker.position)
       }
     },
-    previousAnimation(){
-      if(Math.floor(this.progress/this.speed)==0)return
-      let index = Math.floor(this.progress/this.speed)
-      this.progress=(index-1)*this.speed
-      if(this.progress>1)this.progress -=1
-      this.previousStop = true
-      this.animation =requestAnimationFrame(this.moveFeature)
-    },
-    previousNextAnimation(){
-      if(Math.floor(this.progress/this.speed)==this.route.length)return
-      let index = Math.floor(this.progress/this.speed)
-      this.progress=(index+1)*this.speed
-      if(this.progress>1)this.progress -=1
-      this.previousStop = true
-      this.animation =requestAnimationFrame(this.moveFeature)
-    },
     /**
     * 添加多个新的标注（矢量要素）
     * @param {array} markers要素
@@ -711,38 +398,6 @@ export default {
             width: 6, color: "#cfe7b4"
             //width: 6, color: "#1bac2e"
           })
-        })
-    },
-    lineMoveStyle(){
-      return new Style({
-          stroke: new Stroke({
-            //width: 6, color: "#cfe7b4"
-            width: 6, color: "#1bac2e"
-          }),
-        })
-    },
-    lineMoveStyle1(){
-      return new Style({
-          stroke: new Stroke({
-            //width: 6, color: "#cfe7b4"
-            width: 6, color: "red"
-          }),
-        })
-    },
-     lineMoveStyle2(){
-      return new Style({
-          stroke: new Stroke({
-            //width: 6, color: "#cfe7b4"
-            width: 6, color: "#FF0AF7"
-          }),
-        })
-    },
-     lineMoveStyle3(){
-      return new Style({
-          stroke: new Stroke({
-            //width: 6, color: "#cfe7b4"
-            width: 6, color: "blue"
-          }),
         })
     },
     createLabelStyle(feature){
@@ -817,12 +472,6 @@ export default {
       let popup = this.map.getOverlayById("popup")
       if(popup) popup.setPosition(undefined);
       this.popupShow = false
-      return false;
-    },
-    closeTipPopup(){
-      let popup = this.map.getOverlayById("tipPop")
-      if(popup) popup.setPosition(undefined);
-      this.tooltipShow = false
       return false;
     },
     /**
