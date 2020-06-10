@@ -497,7 +497,7 @@ export default {
           let popup = this.map.getOverlayById("popup")
           this.popupShow = true
           popup.setPosition(popupData.position); //设置popup的位置
-          this.map.getView().setCenter(popupData.position)
+          //this.map.getView().setCenter(popupData.position)
         }
        
       }
@@ -665,7 +665,7 @@ export default {
       })
       this.map.addOverlay(this.setPopup("popup"));
       this.markersData = markers
-       this.map.on('click', this.Popup);
+      this.map.on('click', this.Popup);
 
       if(markers.length > 1){
         let extent = this.vectorPointSource.getExtent()
@@ -792,7 +792,7 @@ export default {
           //要转换成overlay的HTML元素
           element:this.$refs.popup,
           //当前窗口可见
-          autoPan: true,
+          autoPan: false,
           //Popup放置的位置
           positioning: 'bottom-center',
           //是否应该停止事件传播到地图窗口

@@ -5,40 +5,44 @@
       <button @click="addMarker('pointer')" style="height:40px;width:150px">停止鼠标点击事件</button>
       <button @click="setMarker()" style="height:40px;width:150px">新增一个标注</button>
       <button @click="setMarkers()" style="height:40px;width:150px">新增多个</button>
-      <button @click="$refs.map.removeMarker('beijing')" style="height:40px;width:150px">清除某个坐标</button>
-      <button @click="$refs.map.clearMap()" style="height:40px;width:150px">清空地图坐标</button>
+      <button @click="$refs.map1.removeMarker('beijing')" style="height:40px;width:150px">清除某个坐标</button>
+      <button @click="$refs.map1.clearMap()" style="height:40px;width:150px">清空地图坐标</button>
       <button @click="setRoute()" style="height:40px;width:150px">邮路规划</button>
       <button @click="setPolyline()" style="height:40px;width:150px">显示轨迹</button>
-      <button @click="$refs.map.startAnimation(true)" style="height:40px;width:150px">播放轨迹</button>
-      <button @click="$refs.map.pauseAnimation()" style="height:40px;width:150px">暂停播放</button>
-      <button @click="$refs.map.startAnimation(false)" style="height:40px;width:150px">继续播放</button>
-      <button @click="$refs.map.setCenter([114.30, 30.60])" style="height:40px;width:150px">设置中心点</button>
+      <button @click="$refs.map1.startAnimation(true)" style="height:40px;width:150px">播放轨迹</button>
+      <button @click="$refs.map1.pauseAnimation()" style="height:40px;width:150px">暂停播放</button>
+      <button @click="$refs.map1.startAnimation(false)" style="height:40px;width:150px">继续播放</button>
+      <button @click="$refs.map1.setCenter([114.30, 30.60])" style="height:40px;width:150px">设置中心点</button>
       <button @click="setSpeed(100)" style="height:40px;width:50px">慢速</button>
       <button @click="setSpeed(50)" style="height:40px;width:50px">中速</button>
       <button @click="setSpeed(10)" style="height:40px;width:50px">快速</button>
       <button @click="gjms=false" style="height:40px;width:150px">轨迹模式-单一</button>
       <button @click="gjms=true" style="height:40px;width:150px">轨迹模式-速度</button>
       <button @click="cljz=!cljz" style="height:40px;width:150px">车辆居中</button>
-       <button @click="xxcgs=!xxcgs" style="height:40px;width:150px">信息窗跟随</button>
-       <button @click="$refs.map.previousAnimation()" style="height:40px;width:150px">上一条</button>
-       <button @click="$refs.map.previousNextAnimation()" style="height:40px;width:150px">下一条</button>
+      <button @click="xxcgs=!xxcgs" style="height:40px;width:150px">信息窗跟随</button>
+      <button @click="$refs.map1.previousAnimation()" style="height:40px;width:150px">上一条</button>
+      <button @click="$refs.map1.previousNextAnimation()" style="height:40px;width:150px">下一条</button>
+      <button @click="setClusterPoints()" style="height:40px;width:150px">动态聚合</button>{{mapShow}}
     </div>
-    <ol-map class="map" :modal="modal" ref="map" :zoom="zoom" :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed"
+    <ol-map v-show="mapShow" class="map" :modal="modal" ref="map1" :zoom="zoom" :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed"
     :center="center" :mapSource="mapSource" @positionResult="getPostionResult"/>
+    <clusterMap ref="map2" class="map" v-show="!mapShow"/>
   </div>
 </template>
 
 <script>
 import olMap from './components/olMap.vue'
+import clusterMap from './components/clusterMap.vue'
 import mapMinxin from "./base/mapUtils.js"
 export default {
   name: 'App',
   components: {
-    olMap
+    //olMap,clusterMap
   },
    mixins: [mapMinxin],
   data(){
     return {
+      mapShow:false, // 测试olmaop true，clusterMap false
       zoom:11,
       gjms:false,
       cljz:false,
@@ -118,13 +122,13 @@ export default {
       return stationLists
     },
      initData(trackList,stationList){ //处理数据
-      this.$refs.map.setPolyline(this.stationListType(stationList),this.pointListType(trackList))
+      this.$refs.map1.setPolyline(this.stationListType(stationList),this.pointListType(trackList))
         },
     setPolyline(){
       let gj = require("./base/gj.json")
       let station = require("./base/rw.json")
       this.initData(gj.data.rows,station.data.rwmx)
-      // this.$refs.map.setPolyline(stationList, routeCoords)
+      // this.$refs.map1.setPolyline(stationList, routeCoords)
     },
     setRoute(){
        let routeCoords =
@@ -205,26 +209,81 @@ export default {
                     "</div>"
       },
     ]
-      this.$refs.map.setRoute(stationList, routeCoords)
+      this.$refs.map1.setRoute(stationList, routeCoords)
     },
     addMarker(val){
+      this.map1= true
       this.modal.cursorStyle = val
     },
     setMarker(){
-     this.$refs.map.clearMap()
-     let beijing = [116.28, 39.54]
-     let marker = {
-        id: "beijing",
-        position: beijing,
-        title:"北京",
-        icon: require('./assets/station.png'),
-     }
-    this.$refs.map.setMarker(marker)
-    this.center = beijing
- 
+      this.$refs.map1.clearMap()
+      let beijing = [116.28, 39.54]
+      let marker = {
+          id: "beijing",
+          position: beijing,
+          title:"北京",
+          icon: require('./assets/station.png'),
+      }
+      this.$refs.map1.setMarker(marker)
+      this.center = beijing
+    },
+    setClusterPoints(){
+        this.$refs.map1.clearMap()
+        this.$refs.map2.clearMap()
+      
+        // //散列点数组
+        var coordinate = new Array();
+        //散列点
+        var coordinate1 = [104.1005229950, 30.6743128087];
+        var coordinate2 = [103.9271879196, 30.7462617980];
+        var coordinate3 = [103.6227035522, 30.9932085864];
+        var coordinate4 = [103.5752069950, 31.4663367378];
+        var coordinate5 = [103.4307861328, 30.1941019446];
+        var coordinate6 = [106.5885615349, 29.5679608922];
+        var coordinate7 = [106.4500522614, 29.5811456252];
+        var coordinate8 = [107.7666950226, 29.4161988273];
+        var coordinate9 = [118.1862562895, 24.4891501310];
+        var coordinate10 = [118.1982564926, 24.4947641146];
+        var coordinate11 = [79.1592185000, 12.9721456000];
+        var coordinate12 = [80.2164941000, 12.9914031000];
+
+        coordinate.push(coordinate1);
+        coordinate.push(coordinate2);
+        coordinate.push(coordinate3);
+        coordinate.push(coordinate4);
+        coordinate.push(coordinate5);
+        coordinate.push(coordinate6);
+        coordinate.push(coordinate7);
+        coordinate.push(coordinate8);
+        coordinate.push(coordinate9);
+        coordinate.push(coordinate10);
+        coordinate.push(coordinate11);
+        coordinate.push(coordinate12);
+        let points = []
+        coordinate.forEach((item,index)=>{
+          points.push({
+            id: "id"+index,
+            position: item,
+            title:"北京",
+            icon: require('./assets/station.png'),
+            content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>北京</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>"
+          })
+        })
+      this.$refs.map2.setClusterPoints(points)
     },
     setMarkers(){
-      this.$refs.map.clearMap()
+      this.$refs.map1.clearMap()
       let beijing = [116.28, 39.54]
       let changsha = [113,	28.21]
       let markers = [{
@@ -245,26 +304,26 @@ export default {
                     "</div>" +
                     "</div>"
        },
-      {
-        id: "changsha",
-        position: changsha,
-        title: "长沙",
-        icon: require('./assets/station.png'),
-        content: "<div class='card'><div class='pop-up-top'>" +
-                    "<span class='pop-up-tit f-left'><strong>长沙</strong></span>" +
-                    "</div>" +
-                    "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
-                    "<div class='pop-up-middle'>" +
-                    "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
-                    "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
-                    "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
-                    "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
-                    "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
-                    "</div>" +
-                    "</div>"
-      }
+        {
+          id: "changsha",
+          position: changsha,
+          title: "长沙",
+          icon: require('./assets/station.png'),
+          content: "<div class='card'><div class='pop-up-top'>" +
+                      "<span class='pop-up-tit f-left'><strong>长沙</strong></span>" +
+                      "</div>" +
+                      "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                      "<div class='pop-up-middle'>" +
+                      "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                      "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                      "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                      "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                      "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                      "</div>" +
+                      "</div>"
+        }
       ]
-      this.$refs.map.setMarkers(markers)
+      this.$refs.map1.setMarkers(markers)
 
 
     }
