@@ -285,6 +285,7 @@ export default {
     },
     setMarkers(){
       this.$refs.map1.clearMap()
+      this.$refs.map3.clearMap()
       let beijing = [116.28, 39.54]
       let changsha = [113,	28.21]
       let markers = [{
@@ -324,9 +325,11 @@ export default {
                       "</div>"
         }
       ]
-      this.$refs.map1.setMarkers(markers)
-
-
+      if(this.mapShow==1){
+        this.$refs.map1.setMarkers(markers)
+      }else if(this.mapShow==3){
+        this.$refs.map3.setMarkers(markers)
+      }
     }
   }
 }

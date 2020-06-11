@@ -375,6 +375,47 @@ export default {
         this.pauseAnimation()
       }
     },
+     /**
+    * 添加多个新的标注（矢量要素）
+    * @param {array} markers要素
+    */
+    setMarkers(markers){
+      let positions = []
+      let infoContent = []
+      let self = this
+      this.markersData = []
+      let mapPadding = [80, 60, 80, 60] //top, right, bottom and left padding.
+      if(markers.length == 0) return
+      markers.forEach(item => { 
+        //实例化Vector要素，通过矢量图层添加到地图容器中
+        let iconFeature = new Feature({
+          id: item.id,
+          title: item.title,
+          geometry: new Point(item.position),
+          icon: item.icon,
+        })
+        iconFeature.setStyle(this.createLabelStyle(iconFeature))
+        this.vectorPointSource.addFeature(iconFeature)
+      })
+      this.map.addOverlay(this.setPopup("popup"));
+      this.markersData = markers
+      this.map.on('click', this.Popup);
+
+      if(markers.length > 1){
+        let extent = this.vectorPointSource.getExtent()
+        this.map.getView().fit(extent, {
+          size: this.map.getSize(),
+          padding: mapPadding,
+          nearest: true
+        })
+        return
+      }
+      if(markers.length==1){
+        //只有一个坐标的时候居中就ok
+        this.map.getView().setCenter(markers[0].position)
+      }
+
+    },
     drawLineSection(start,end,lineArr1,speedMode){
       let xyAr_line = new Array()
       let positions =[]
