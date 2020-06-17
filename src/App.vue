@@ -27,8 +27,8 @@
     </div>
     <ol-map v-show="mapShow==1" class="map" :modal="modal" ref="map1" :zoom="zoom" 
     :center="center" :mapSource="mapSource" @positionResult="getPostionResult"/>
-    <clusterMap ref="map2" class="map" v-show="mapShow==2"/>
-    <trackThePlaybackMap ref="map3" class="map"  :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed" v-show="mapShow==3"/>
+    <cluster-map ref="map2" class="map" v-show="mapShow==2"/>
+    <track-the-playback-map ref="map3" class="map"  :xxcgs="xxcgs" :gjms="gjms" :cljz="cljz" :speed="speed" v-show="mapShow==3"/>
   </div>
 </template>
 
@@ -284,6 +284,7 @@ export default {
     },
     setMarkers(){
       this.$refs.map1.clearMap()
+      this.$refs.map3.clearMap()
       let beijing = [116.28, 39.54]
       let changsha = [113,	28.21]
       let markers = [{
@@ -323,9 +324,11 @@ export default {
                       "</div>"
         }
       ]
-      this.$refs.map1.setMarkers(markers)
-
-
+      if(this.mapShow==1){
+        this.$refs.map1.setMarkers(markers)
+      }else if(this.mapShow==3){
+        this.$refs.map3.setMarkers(markers)
+      }
     }
   }
 }
