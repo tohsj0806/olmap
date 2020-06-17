@@ -22,7 +22,8 @@
       <button @click="xxcgs=!xxcgs" style="height:40px;width:150px">信息窗跟随</button>
       <button @click="$refs.map3.previousAnimation()" style="height:40px;width:150px">上一条</button>
       <button @click="$refs.map3.previousNextAnimation()" style="height:40px;width:150px">下一条</button>
-      <button @click="setClusterPoints()" style="height:40px;width:150px">动态聚合</button>{{mapShow}}
+      <button @click="setClusterPoints()" style="height:40px;width:150px">动态聚合</button>
+      <button @click="setPointAndPopup(3)" style="height:40px;width:150px">弹出聚合地图中的pop</button>
     </div>
     <ol-map v-show="mapShow==1" class="map" :modal="modal" ref="map1" :zoom="zoom" 
     :center="center" :mapSource="mapSource" @positionResult="getPostionResult"/>
@@ -44,7 +45,7 @@ export default {
    mixins: [mapMinxin],
   data(){
     return {
-      mapShow:3, // 测试olmaop 1，clusterMap 2,trackThePlaybackMap:3
+      mapShow:2, // 测试olmaop 1，clusterMap 2,trackThePlaybackMap:3
       zoom:11,
       gjms:false,
       cljz:false,
@@ -228,43 +229,41 @@ export default {
       this.$refs.map1.setMarker(marker)
       this.center = beijing
     },
+    setPointAndPopup(index){
+      let data = {
+            id: "id"+index,
+            position: [120.693099, 30.514062],
+            title:"北京",
+            icon: require('./assets/station.png'),
+            content: "<div class='card'><div class='pop-up-top'>" +
+                        "<span class='pop-up-tit f-left'><strong>北京</strong></span>" +
+                        "</div>" +
+                        "<div style='width:100%;height:1px;border-top:solid rgb(85,85,85) 1px;'></div>"+
+                        "<div class='pop-up-middle'>" +
+                        "<div class='row-fluid'><label>站点简称：</label><span>xzd</span></div>" +
+                        "<div class='row-fluid'><label>站点半径：</label><span>500</span></div>" +
+                        "<div class='row-fluid'><label>站点类型：</label><span>营业部</span></div>" +
+                        "<div class='row-fluid'><label>联系人：</label><span>李66</span></div>" +
+                        "<div class='row-fluid'><label>联系电话：</label><span>1867876788</span></div>" +
+                        "</div>" +
+                        "</div>"
+          }
+      this.$refs.map2.findMarkerAndPopup(data)
+    },
     setClusterPoints(){
         this.$refs.map1.clearMap()
         this.$refs.map2.clearMap()
-      
+
         // //散列点数组
         var coordinate = new Array();
-        //散列点
-        var coordinate1 = [104.1005229950, 30.6743128087];
-        var coordinate2 = [103.9271879196, 30.7462617980];
-        var coordinate3 = [103.6227035522, 30.9932085864];
-        var coordinate4 = [103.5752069950, 31.4663367378];
-        var coordinate5 = [103.4307861328, 30.1941019446];
-        var coordinate6 = [106.5885615349, 29.5679608922];
-        var coordinate7 = [106.4500522614, 29.5811456252];
-        var coordinate8 = [107.7666950226, 29.4161988273];
-        var coordinate9 = [118.1862562895, 24.4891501310];
-        var coordinate10 = [118.1982564926, 24.4947641146];
-        var coordinate11 = [79.1592185000, 12.9721456000];
-        var coordinate12 = [80.2164941000, 12.9914031000];
-
-        coordinate.push(coordinate1);
-        coordinate.push(coordinate2);
-        coordinate.push(coordinate3);
-        coordinate.push(coordinate4);
-        coordinate.push(coordinate5);
-        coordinate.push(coordinate6);
-        coordinate.push(coordinate7);
-        coordinate.push(coordinate8);
-        coordinate.push(coordinate9);
-        coordinate.push(coordinate10);
-        coordinate.push(coordinate11);
-        coordinate.push(coordinate12);
+        // //散列点
+        let data = require("./api/carlist.json").data.clxxList.list
+        console.log(data)
         let points = []
-        coordinate.forEach((item,index)=>{
+        data.forEach((item,index)=>{
           points.push({
             id: "id"+index,
-            position: item,
+            position: [item.jd, item.wd],
             title:"北京",
             icon: require('./assets/station.png'),
             content: "<div class='card'><div class='pop-up-top'>" +

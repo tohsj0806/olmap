@@ -194,6 +194,23 @@ export default {
        
       }
     },
+    findMarkerAndPopup(popupData){
+      this.popupShow = false
+      if(!!popupData){
+          var content = popupData.content;
+          var title = popupData.title;
+          this.featuerInfo.geo = popupData.position
+          this.featuerInfo.att.text = content;//正文
+          this.featuerInfo.att.title = title;//标题
+          this.$refs.content.innerHTML = ''; //清空popup的内容容器
+          this.addFeatrueInfo(this.featuerInfo); //在popup中加载当前要素的具体信息
+          let popup = this.map.getOverlayById("popup")
+          this.popupShow = true
+          popup.setPosition(popupData.position); //设置popup的位置
+          this.map.getView().setCenter(popupData.position)
+          this.map.getView().setZoom(15)
+        }
+    },
         /**
     * 动态创建popup的具体内容
     * @param {string} title 
