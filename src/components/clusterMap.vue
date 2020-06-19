@@ -194,7 +194,7 @@ export default {
        
       }
     },
-    findMarkerAndPopup(popupData){
+    findMarkerAndPopup(popupData, zoom){
       this.popupShow = false
       if(!!popupData){
           var content = popupData.content;
@@ -208,7 +208,7 @@ export default {
           this.popupShow = true
           popup.setPosition(popupData.position); //设置popup的位置
           this.map.getView().setCenter(popupData.position)
-          this.map.getView().setZoom(15)
+          this.map.getView().setZoom(zoom)
         }
     },
         /**

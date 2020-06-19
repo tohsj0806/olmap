@@ -248,7 +248,7 @@ export default {
                         "</div>" +
                         "</div>"
           }
-      this.$refs.map2.findMarkerAndPopup(data)
+      this.$refs.map2.findMarkerAndPopup(data,14)
     },
     setClusterPoints(){
         this.$refs.map1.clearMap()
